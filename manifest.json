@@ -3,8 +3,9 @@
   "short_name": "Cardio Blocks",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
+  "background_color": "#ffffff",
   "theme_color": "#007BFF",
+
   "icons": [
     {
       "src": "icon-192.png",
@@ -23,3 +24,4 @@
     }
   ]
 }
+
