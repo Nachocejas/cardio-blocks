@@ -1,4 +1,5 @@
 
+  
   body {
     font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0;
     display: flex; align-items: center; justify-content: center; min-height: 100vh;
@@ -17,8 +18,16 @@
 
   button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
   button:hover { background-color: #0056b3; }
+  button.iniciar {
+    background-color: #28a745;
+    font-size: 18px;
+    font-weight: bold;
+    min-height: 50px;
+  }
+  button.iniciar:hover {
+    background-color: #218838;
+  }
   
-
 
   #mensaje { display: none !important; }
   #cuenta { font-size: 48px; margin-top: 10px; transition: transform 0.2s ease-in-out; display: none; }
@@ -197,7 +206,7 @@ display:block;
     80% { transform: translateX(4px); }
   }
 
-/* ===== Pantalla inicial adaptada a móvil ===== */
+  /* ===== Pantalla inicial adaptada a móvil ===== */
 @media (max-width: 600px) {
   body {
     padding: 0;
@@ -223,7 +232,7 @@ display:block;
   input, button, select {
     font-size: 18px;   /* más grande en móvil */
     min-height: 48px;  /* botones cómodos */
-    margin-bottom: 10px 
+    margin-bottom: 10px;
   }
 
   #titulo {
@@ -233,4 +242,24 @@ display:block;
     margin-bottom: 20px;
   }
 }
+
+/* Botón principal de iniciar entrenamiento */
+button.iniciar {
+  background-color: #28a745; /* Verde */
+  font-size: 18px;
+  font-weight: bold;
+  min-height: 50px;
+}
+button.iniciar:hover {
+  background-color: #218838;
+}
+
+/* Evitar que en modo oscuro se pinte azul */
+[data-theme="dark"] button.iniciar {
+  background-color: #28a745; /* Mismo verde */
+}
+[data-theme="dark"] button.iniciar:hover {
+  background-color: #218838;
+}
+
 
