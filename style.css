@@ -17,15 +17,7 @@
 
   button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
   button:hover { background-color: #0056b3; }
-  button.iniciar {
-    background-color: #28a745;
-    font-size: 18px;
-    font-weight: bold;
-    min-height: 50px;
-  }
-  button.iniciar:hover {
-    background-color: #218838;
-  }
+  
 
 
   #mensaje { display: none !important; }
