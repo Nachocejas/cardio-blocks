@@ -17,6 +17,16 @@
 
   button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
   button:hover { background-color: #0056b3; }
+  button.iniciar {
+    background-color: #28a745;
+    font-size: 18px;
+    font-weight: bold;
+    min-height: 50px;
+  }
+  button.iniciar:hover {
+    background-color: #218838;
+  }
+
 
   #mensaje { display: none !important; }
   #cuenta { font-size: 48px; margin-top: 10px; transition: transform 0.2s ease-in-out; display: none; }
@@ -221,6 +231,7 @@ display:block;
   input, button, select {
     font-size: 18px;   /* más grande en móvil */
     min-height: 48px;  /* botones cómodos */
+    margin-bottom: 10px 
   }
 
   #titulo {
