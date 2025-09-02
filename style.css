@@ -195,4 +195,39 @@ display:block;
     80% { transform: translateX(4px); }
   }
 
+/* ===== Pantalla inicial adaptada a móvil ===== */
+@media (max-width: 600px) {
+  body {
+    padding: 0;
+  }
+
+  .container {
+    border-radius: 0;
+    max-width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 16px;
+    box-shadow: none; /* más limpio en móvil */
+  }
+
+  #formulario {
+    flex: 1; /* ocupa espacio vertical */
+    display: flex;
+    flex-direction: column;
+  }
+
+  input, button, select {
+    font-size: 18px;   /* más grande en móvil */
+    min-height: 48px;  /* botones cómodos */
+  }
+
+  #titulo {
+    font-size: clamp(26px, 8vw, 40px);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+}
 
