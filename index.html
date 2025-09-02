@@ -45,7 +45,8 @@
       <input type="number" id="descansoBloque" placeholder="Por ejemplo: 30">
   
       <button onclick="agregarBloque()">Añadir ejercicio</button>
-      <button onclick="iniciarEntrenamiento()">Iniciar entrenamiento</button>
+      <button class="iniciar" onclick="iniciarEntrenamiento()">Iniciar entrenamiento</button>
+
     </div>
   
     <div id="bloques"></div>
@@ -68,8 +69,6 @@
     <button onclick="confirmarReset()" id="btnReset" style="display:none;">Reset</button>
     <button onclick="togglePausa()" id="btnPauseResume" style="display:none;">Pausar</button>
     <button onclick="saltarCiclo()" id="btnSkip" style="display:none;">Saltar ciclo</button>
-    
-
   
     <div id="seccionRutinas">
       <hr>
