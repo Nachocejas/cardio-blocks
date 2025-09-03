@@ -1,678 +1,364 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cardio Blocks</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-192.png" />
-  <link rel="stylesheet" href="style.css" />
-  
-</head>
-<body>
-  <div id="splash">
-    <img src="icon-192.png" alt="Cardio Blocks" />
-    <h1>Cardio Blocks</h1>
-  </div>
-  
-  <div class="container">
-    <div class="topbar">
-      <div class="topbar-brand">Cardio Blocks</div>
-      <div class="topbar-right">
-        <!-- Interruptor de Tema -->
-        <label class="theme-switch" title="Cambiar tema">
-          <input id="themeSwitch" type="checkbox" onchange="toggleThemeSwitch(this)">
-          <span class="slider">
-            <span class="icon sun">☀️</span>
-            <span class="icon moon">🌙</span>
-          </span>
-        </label>
-      </div>
-    </div>
-  
-    <h1 id="titulo">Cardio Blocks</h1>
-    <h2 id="tituloEjercicio" class="oculto" aria-live="polite"></h2>
-      
-    <div id="formulario">
-      <label for="nombre">Nombre del ejercicio</label>
-      <input type="text" id="nombre" placeholder="Ej: Flexiones">
-  
-      <label for="series">N.º de series</label>
-      <input type="number" id="series" placeholder="Por ejemplo: 3">
-  
-      <label for="serieTime">Tiempo de serie (segundos)</label>
-      <input type="number" id="serieTime" placeholder="Por ejemplo: 30">
-  
-      <label for="descansoTime">Tiempo de descanso entre series (segundos)</label>
-      <input type="number" id="descansoTime" placeholder="Por ejemplo: 15">
-  
-      <label for="descansoBloque">Descanso tras bloque (segundos)</label>
-      <input type="number" id="descansoBloque" placeholder="Por ejemplo: 30">
-  
-      <button onclick="agregarBloque()">Añadir ejercicio</button>
-      <button class="iniciar" onclick="iniciarEntrenamiento()">Iniciar entrenamiento</button>
 
-    </div>
-  
-    <div id="bloques"></div>
-    <div id="mensaje"></div>
-  
-    <div id="cuenta" aria-live="polite">00</div>
-  
-    <div id="progressWrap">
-      <div class="progress">
-        <div id="progressBar" class="progress__bar"></div>
-      </div>
-      <div id="progressText" class="progress__text">Preparado…</div>
-    </div>
-  
-    <div id="info">
-      <p>⏱ Tiempo total: <span id="tiempoTotal">0</span> s</p>
-      <p>✅ Series completadas: <span id="seriesCompletadas">0</span></p>
-    </div>
-  
-    <button onclick="confirmarReset()" id="btnReset" style="display:none;">Reset</button>
-    <button onclick="togglePausa()" id="btnPauseResume" style="display:none;">Pausar</button>
-    <button onclick="saltarCiclo()" id="btnSkip" style="display:none;">Saltar ciclo</button>
-  
-    <div id="seccionRutinas">
-      <hr>
-      <h3>Rutinas guardadas</h3>
-      <input type="text" id="nombreRutina" placeholder="Nombre de la rutina">
-      <button onclick="guardarComoRutina()">Guardar como rutina</button>
-  
-      <select id="selectRutinas" onchange="cargarRutinaSeleccionada()">
-        <option value="">--Selecciona una rutina--</option>
-      </select>
-      <button onclick="eliminarRutina()">Eliminar rutina seleccionada</button>
-    </div>
-  </div>
-  
-  <script>
-    let bloques = [];
-    let bloqueActual = 0, serieActual = 0, tiempoRestante = 0;
-    let timer = null, cronometroTotal = null, tiempoTotal = 0, seriesCompletadas = 0;
-    let audioCtx; // contexto global
-  
-    // Wake Lock + estado de sesión + beforeunload
-    let wakeLock = null;
-    let entrenoEnCurso = false;
-    async function lockScreen() { try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {} }
-    function unlockScreen() { try { wakeLock?.release(); } catch {} wakeLock = null; }
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && wakeLock) lockScreen();
-    });
-    window.addEventListener('beforeunload', (e) => {
-      if (entrenoEnCurso) { e.preventDefault(); e.returnValue = ''; }
-    });
-  
-    // Atajos teclado
-    window.addEventListener('keydown', (e) => {
-      if (!entrenoEnCurso) return;
-      const tag = (e.target.tagName || '').toLowerCase();
-      if (['input','textarea','select','button'].includes(tag)) return;
-      if (e.code === 'Space') { e.preventDefault(); togglePausa(); }
-      if (e.code === 'ArrowRight') { e.preventDefault(); saltarCiclo(); }
-    });
-  
-    // Estado
-    let enPausa = false;
-    // 'beepSerie' | 'serie' | 'beepDescanso' | 'descanso' | 'beepBloque' | 'descansoBloque'
-    let faseActual = null;
-    let cuentaCallback = null;
-    let tiempoGuardado = 0;
-    let currentOsc = null;
-    let totalEtapa = 0;
-  
-    // ===== Vibración (siempre activa, sin botón) =====
-    function vibrar(ms = 150) {
-      let ok = false;
-      try {
-        const dur = ms < 120 ? 150 : ms;
-        if ('vibrate' in navigator) {
-          ok = navigator.vibrate(dur);
-          if (!ok) ok = navigator.vibrate([80, 40, 80]);
-        }
-      } catch (_) {}
-      if (!ok) {
-        const cont = document.querySelector('.container');
-        if (cont) { cont.classList.remove('vib-fx'); void cont.offsetWidth; cont.classList.add('vib-fx'); }
-      }
-      return ok;
+  body {
+    font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0;
+    display: flex; align-items: center; justify-content: center; min-height: 100vh;
+  }
+
+  .container {
+    background-color: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 400px; width: 100%; text-align: center; box-sizing: border-box; overflow-wrap: break-word; overflow: hidden;
+  }
+
+  label { display: block; text-align: left; margin-top: 10px; margin-bottom: 4px; font-weight: bold; }
+
+  input, button, select {
+    width: 100%; padding: 12px; margin: 5px 0; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;
+  }
+
+  button { 
+    background-color: #007BFF;
+     color: white; 
+     border: none; 
+     cursor: pointer; 
+     width: 100%; 
+     padding: 12px; 
+     margin: 5px 0; 
+     font-size: 16px; 
+     border-radius: 8px;
+     cursor: pointer;
     }
+  button:hover { background-color: #0056b3; }
+  button.iniciar {
+    background-color: #28a745;
+    font-size: 18px;
+    font-weight: bold;
+    min-height: 50px;
+  }
+  button.iniciar:hover {
+    background-color: #218838;
+  }
   
-    // Tañ corto
-    function sonarTañ(durMs = 200) {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const now = audioCtx.currentTime;
-      const o1 = audioCtx.createOscillator();
-      const o2 = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o1.type = 'sine'; o1.frequency.value = 880;
-      o2.type = 'sine'; o2.frequency.value = 1320;
-      g.gain.setValueAtTime(0.0001, now);
-      g.gain.linearRampToValueAtTime(0.25, now + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + durMs / 1000);
-      o1.connect(g); o2.connect(g); g.connect(audioCtx.destination);
-      o1.start(now); o2.start(now); o1.stop(now + durMs/1000); o2.stop(now + durMs/1000);
-    }
-  
-    // Mostrar/ocultar títulos de marca/ejercicio
-    function ocultarTituloConTañ() {
-      const t = document.getElementById('titulo');
-      if (!t) return;
-      sonarTañ(200);
-      t.classList.add('titulo-oculto');
-      setTimeout(() => { t.style.display = 'none'; }, 250);
-    }
-    function mostrarTituloConTañ() {
-      const t = document.getElementById('titulo');
-      if (!t) return;
-      t.style.display = '';
-      requestAnimationFrame(() => t.classList.remove('titulo-oculto'));
-      sonarTañ(200);
-    }
-    function mostrarTituloEjercicio(nombre) {
-      const te = document.getElementById('tituloEjercicio');
-      te.textContent = nombre || '';
-      te.classList.remove('oculto');
-    }
-    function ocultarTituloEjercicio() {
-      const te = document.getElementById('tituloEjercicio');
-      te.textContent = '';
-      te.classList.add('oculto');
-    }
-  
-    // ===== Helper: UI de “modo entrenando” =====
-    function setEntrenandoUI(on){
-      document.documentElement.classList.toggle('entrenando', !!on);
-    }
-  
-    // ===== Añadir bloque =====
-    function agregarBloque() {
-      const nombre = document.getElementById('nombre').value;
-      const series = parseInt(document.getElementById('series').value);
-      const serieTime = parseInt(document.getElementById('serieTime').value);
-      const descansoTime = parseInt(document.getElementById('descansoTime').value);
-      const descansoBloque = parseInt(document.getElementById('descansoBloque').value);
-  
-      if (!nombre || isNaN(series) || isNaN(serieTime) || isNaN(descansoTime) || isNaN(descansoBloque)) {
-        alert("Por favor, rellena todos los campos correctamente.");
-        return;
-      }
-  
-      bloques.push({ nombre, series, serieTime, descansoTime, descansoBloque });
-  
-      const div = document.createElement('div');
-      div.className = 'bloque-item';
-      div.textContent = `${nombre} - ${series}x${serieTime}s + ${descansoTime}s descanso, ${descansoBloque}s entre bloques`;
-      document.getElementById('bloques').appendChild(div);
-  
-      limpiarCampos();
-      guardarRutinas();
-    }
-  
-    // ===== Inicio/flujo =====
-    function iniciarEntrenamiento() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-  
-      if (bloques.length === 0) {
-        alert("Agrega al menos un ejercicio.");
-        return;
-      }
-      document.getElementById('formulario').classList.add('oculto');
-      document.getElementById('bloques').classList.add('oculto');
-      document.getElementById('btnReset').style.display = 'inline-block';
-      document.getElementById('btnPauseResume').style.display = 'inline-block';
-      document.getElementById('btnPauseResume').innerText = 'Pausar';
-      document.getElementById('btnSkip').style.display = 'inline-block';
-      document.getElementById('cuenta').style.display = 'block';
-      document.getElementById('seccionRutinas').style.display = 'none';
-  
-      const wrap = document.getElementById('progressWrap');
-      wrap.style.display = 'block';
-      wrap.style.visibility = 'hidden';
-  
-      enPausa = false;
-      entrenoEnCurso = true;
-      lockScreen();
-  
-      bloqueActual = 0;
-      serieActual = 0;
-      tiempoTotal = 0;
-      seriesCompletadas = 0;
-      document.getElementById('tiempoTotal').innerText = tiempoTotal;
-      document.getElementById('seriesCompletadas').innerText = seriesCompletadas;
-      iniciarCronometroTotal();
-  
-      ocultarTituloConTañ();
-      ocultarTituloEjercicio();
-  
-      setEntrenandoUI(true);             // <<<<<< activar UI de entreno
-      iniciarSerie();
-    }
-  
-    function stopBeepIfAny() {
-      if (currentOsc) { try { currentOsc.onended = null; currentOsc.stop(); } catch(e) {} currentOsc = null; }
-    }
-  
-    // Beeps
-    function reproducirBeepInicio(callback) {
-      vibrar(150);
-      faseActual = 'beepSerie';
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-  
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      currentOsc = osc;
-  
-      osc.type = 'sine'; osc.frequency.value = 440;
-      const now = audioCtx.currentTime;
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
-      gain.gain.setValueAtTime(0.2, now + 3 - 0.02);
-      gain.gain.linearRampToValueAtTime(0, now + 3);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(now); osc.stop(now + 3);
-      osc.onended = () => { currentOsc = null; if (!enPausa && typeof callback === 'function') callback(); };
-      ocultarBarra();
-    }
-  
-    function reproducirBeepDescanso(callback) {
-      vibrar(150);
-      faseActual = 'beepDescanso';
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-  
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      currentOsc = osc;
-  
-      osc.type = 'sine'; osc.frequency.value = 440;
-      const now = audioCtx.currentTime;
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
-      gain.gain.setValueAtTime(0.2, now + 1 - 0.02);
-      gain.gain.linearRampToValueAtTime(0, now + 1);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(now); osc.stop(now + 1);
-      osc.onended = () => { currentOsc = null; if (!enPausa && typeof callback === 'function') callback(); };
-      ocultarBarra();
-    }
-  
-    function reproducirBeepDescansoBloque(callback) {
-      vibrar(150);
-      faseActual = 'beepBloque';
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-  
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      currentOsc = osc;
-  
-      osc.type = 'square'; osc.frequency.value = 660;
-      const now = audioCtx.currentTime;
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
-      gain.gain.setValueAtTime(0.2, now + 1 - 0.02);
-      gain.gain.linearRampToValueAtTime(0, now + 1);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(now); osc.stop(now + 1);
-      osc.onended = () => { currentOsc = null; if (!enPausa && typeof callback === 'function') callback(); };
-      ocultarBarra();
-    }
-  
-    // Flujo
-    function iniciarSerie() {
-      const bloque = bloques[bloqueActual];
-      if (serieActual < bloque.series) {
-        serieActual++;
-        mostrarTituloEjercicio(bloque.nombre);
-        reproducirBeepInicio(() => {
-          cuentaAtras(bloque.serieTime, iniciarDescanso, 'serie');
-        });
-      } else {
-        iniciarDescansoBloque();
-      }
-    }
-  
-    function iniciarDescanso() {
-      const bloque = bloques[bloqueActual];
-      seriesCompletadas++;
-      document.getElementById('seriesCompletadas').innerText = seriesCompletadas;
-      mostrarTituloEjercicio(`Descanso — ${bloque.nombre}`);
-      reproducirBeepDescanso(() => {
-        cuentaAtras(bloque.descansoTime, iniciarSerie, 'descanso');
-      });
-    }
-  
-    function iniciarDescansoBloque() {
-      mostrarTituloEjercicio(`Descanso entre bloques`);
-      const bloque = bloques[bloqueActual];
-      reproducirBeepDescansoBloque(() => {
-        cuentaAtras(bloque.descansoBloque, () => {
-          bloqueActual++;
-          serieActual = 0;
-          if (bloqueActual < bloques.length) {
-            iniciarSerie();
-          } else {
-            finalizarEntrenamiento();
-          }
-        }, 'descansoBloque');
-      });
-    }
-  
-    // Temporizador preciso
-    function cuentaAtras(segundos, callback, etapa) {
-      faseActual = etapa || faseActual || null;
-      totalEtapa = segundos;
-      cuentaCallback = callback;
-  
-      mostrarBarra(faseActual || 'Cuenta', totalEtapa);
-  
-      const end = Date.now() + segundos * 1000;
-      if (timer) clearInterval(timer);
-  
-      const tick = () => {
-        const ms = end - Date.now();
-        tiempoRestante = Math.max(0, Math.ceil(ms / 1000));
-        actualizarCuenta();
-        actualizarProgreso();
-  
-        if (ms <= 0) {
-          clearInterval(timer);
-          const bar = document.getElementById('progressBar');
-          const txt = document.getElementById('progressText');
-          bar.style.transform = 'scaleX(1)';
-          txt.innerText = `${nombreEtapa(faseActual)}: ${totalEtapa}/${totalEtapa}s`;
-          setTimeout(() => callback(), 220);
-        }
-      };
-  
-      tick();
-      timer = setInterval(tick, 200);
-    }
-  
-    function actualizarCuenta() {
-      const cuentaDiv = document.getElementById('cuenta');
-      cuentaDiv.innerText = tiempoRestante;
-      cuentaDiv.classList.add('animar');
-      setTimeout(() => cuentaDiv.classList.remove('animar'), 200);
-    }
-  
-    function nombreEtapa(etapa) {
-      switch (etapa) {
-        case 'serie': return 'Serie';
-        case 'descanso': return 'Descanso';
-        case 'descansoBloque': return 'Descanso entre bloques';
-        default: return 'Cuenta';
-      }
-    }
-  
-    function estiloBarraPorEtapa(etapa) {
-      const bar = document.getElementById('progressBar');
-      if (etapa === 'serie') bar.style.background = '#28a745';
-      else if (etapa === 'descanso') bar.style.background = '#ff9800';
-      else if (etapa === 'descansoBloque') bar.style.background = '#6f42c1';
-      else bar.style.background = '#007BFF';
-    }
-  
-    function mostrarBarra(etapa, total) {
-      const wrap = document.getElementById('progressWrap');
-      const bar  = document.getElementById('progressBar');
-      const txt  = document.getElementById('progressText');
-      wrap.style.display = 'block';
-      wrap.style.visibility = 'hidden';
-      bar.style.transition = 'none';
-      bar.style.transform  = 'scaleX(0)';
-      estiloBarraPorEtapa(etapa);
-      txt.innerText = `${nombreEtapa(etapa)}: 0/${total}s`;
-      void bar.offsetWidth; // reflow
-      requestAnimationFrame(() => {
-        bar.style.transition = 'transform 0.2s linear';
-        wrap.style.visibility = 'visible';
-      });
-    }
-  
-    function ocultarBarra() {
-      const wrap = document.getElementById('progressWrap');
-      wrap.style.visibility = 'hidden'; // reserva espacio
-    }
-  
-    function actualizarProgreso() {
-      const bar = document.getElementById('progressBar');
-      const txt = document.getElementById('progressText');
-      if (totalEtapa <= 0 || document.getElementById('progressWrap').style.display === 'none') return;
-      const transcurrido = Math.max(0, totalEtapa - tiempoRestante);
-      const ratio = Math.min(1, Math.max(0, transcurrido / totalEtapa));
-      bar.style.transform = `scaleX(${ratio})`;
-      txt.innerText = `${nombreEtapa(faseActual)}: ${transcurrido}/${totalEtapa}s`;
-    }
-  
-    // Pausar / Reanudar
-    function togglePausa() {
-      const btn = document.getElementById('btnPauseResume');
-      if (!enPausa) {
-        enPausa = true; btn.innerText = 'Reanudar';
-        if (timer) { clearInterval(timer); timer = null; tiempoGuardado = tiempoRestante; }
-        stopBeepIfAny();
-      } else {
-        enPausa = false; btn.innerText = 'Pausar';
-        const bloque = bloques[bloqueActual];
-        if (faseActual === 'beepSerie') {
-          reproducirBeepInicio(() => cuentaAtras(bloque.serieTime, iniciarDescanso, 'serie'));
-        } else if (faseActual === 'beepDescanso') {
-          reproducirBeepDescanso(() => cuentaAtras(bloque.descansoTime, iniciarSerie, 'descanso'));
-        } else if (faseActual === 'beepBloque') {
-          reproducirBeepDescansoBloque(() => cuentaAtras(bloque.descansoBloque, () => {
-            bloqueActual++; serieActual = 0; (bloqueActual < bloques.length) ? iniciarSerie() : finalizarEntrenamiento();
-          }, 'descansoBloque'));
-        } else {
-          if (tiempoGuardado > 0 && cuentaCallback) cuentaAtras(tiempoGuardado, cuentaCallback, faseActual);
-        }
-      }
-    }
-  
-    // Saltar ciclo
-    function saltarCiclo() {
-      if (timer) { clearInterval(timer); timer = null; }
-      stopBeepIfAny();
-      enPausa = false;
-  
-      const bloque = bloques[bloqueActual];
-      switch (faseActual) {
-        case 'beepSerie':
-          cuentaAtras(bloque.serieTime, iniciarDescanso, 'serie'); break;
-        case 'serie':
-          iniciarDescanso(); break;
-        case 'beepDescanso':
-          cuentaAtras(bloque.descansoTime, iniciarSerie, 'descanso'); break;
-        case 'descanso':
-          iniciarSerie(); break;
-        case 'beepBloque':
-          cuentaAtras(bloque.descansoBloque, () => {
-            bloqueActual++; serieActual = 0;
-            (bloqueActual < bloques.length) ? iniciarSerie() : finalizarEntrenamiento();
-          }, 'descansoBloque'); break;
-        case 'descansoBloque':
-          bloqueActual++; serieActual = 0;
-          (bloqueActual < bloques.length) ? iniciarSerie() : finalizarEntrenamiento(); break;
-        default: iniciarSerie(); break;
-      }
-    }
-  
-    function finalizarEntrenamiento() {
-      clearInterval(timer); clearInterval(cronometroTotal); stopBeepIfAny();
-      enPausa = false; entrenoEnCurso = false; unlockScreen();
-  
-      document.getElementById('cuenta').innerText = "00";
-      document.getElementById('btnReset').style.display = 'none';
-      document.getElementById('btnPauseResume').style.display = 'none';
-      document.getElementById('btnSkip').style.display = 'none';
-      document.getElementById('formulario').classList.remove('oculto');
-      document.getElementById('bloques').classList.remove('oculto');
-      document.getElementById('bloques').innerHTML = '';
-      document.getElementById('cuenta').style.display = 'none';
-      document.getElementById('seccionRutinas').style.display = 'block';
-  
-      limpiarCampos();
-      bloques = [];
-      guardarRutinas();
-  
-      ocultarBarra();
-      document.getElementById('progressWrap').style.display = 'none';
-  
-      mostrarTituloConTañ();
-      mostrarTituloEjercicio('');
-      ocultarTituloEjercicio();
-  
-      setEntrenandoUI(false);           // <<<<<< desactivar UI de entreno
-    }
-  
-    function confirmarReset() {
-      const ok = confirm("¿Seguro que quieres resetear el entrenamiento? Perderás el progreso de esta sesión.");
-      if (ok) { reiniciarEntrenamiento(); }
-    }
+
+  #mensaje { display: none !important; }
+  #cuenta { font-size: 48px; margin-top: 10px; transition: transform 0.2s ease-in-out; display: none; }
+  #cuenta.animar { transform: scale(1.3); }
+
+  #info { margin-top: 10px; font-size: 14px; }
+  #bloques { margin-top: 15px; text-align: left; }
+  .bloque-item { background: #e0e0e0; padding: 10px; border-radius: 8px; margin-bottom: 5px; }
+
+  .oculto { display: none; }
+
+  /* Título principal con transición */
+  #titulo { 
+    transition: opacity .25s ease, transform .25s ease;
+    font-size: clamp(248px, 9vw, 44px);
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .titulo-oculto { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+
+  /* Título del ejercicio (modo entrenamiento) */
+  #tituloEjercicio {
+    font-size: clamp(24px, 6vw, 32px);
+    font-weight: 800;
+    margin: 0 0 6px 0;
+    min-height: 2.6em;          /* reserva estable */
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+  }
+
+  /* (Antigua regla móvil que hacía pequeño el H1) — no la usamos ya */
+  /* @media (max-width: 500px) { h1 { font-size: 20px; } } */
+
+  /* ===== Progreso ===== */
+  #progressWrap {
+    margin-top: 10px;
+    text-align: left;
+    display: none;              /* se mostrará al iniciar entreno */
+  }
+  .progress {
+    height: 14px;               /* más alta para móvil */
+    background: #e6e6e6; border-radius: 8px; overflow: hidden;
+  }
+  .progress__bar{
+    height: 100%;
+    width: 100%;
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 0.2s linear;
+    will-change: transform;
+  }
+
+  /* Barra de progreso colores */
+
+/* Estados */
+  .progress__bar.serie { background: #28a745; }          /* verde */
+  .progress__bar.descanso { background: #ff9800; }       /* naranja */
+  .progress__bar.descansoBloque { background: #6f42c1; } /* morado */
+  .progress__text { font-size: 12px; margin-top: 6px; color: #555; }
+
+  /* === Modo oscuro =================================================== */
+  :root { color-scheme: light; }
+  [data-theme="dark"] { color-scheme: dark; }
+  [data-theme="dark"] body { background-color: #0f172a; color: #e5e7eb; }
+  [data-theme="dark"] .container { background-color: #111827; box-shadow: 0 0 10px rgba(0,0,0,.4); }
+  [data-theme="dark"] input, [data-theme="dark"] select { background-color: #0b1220; border-color: #374151; color: #e5e7eb; }
+  [data-theme="dark"] button { background-color: #2563eb; }
+  [data-theme="dark"] button:hover { background-color: #1d4ed8; }
+  [data-theme="dark"] .bloque-item { background: #1f2937; }
+  [data-theme="dark"] .progress { background: #1f2937; border-color: #374151; }
+  [data-theme="dark"] .progress__bar { background: #60a5fa; }
+  [data-theme="dark"] #titulo { color: #e5e7eb; }
+  [data-theme="dark"] #tituloEjercicio { color: #f9fafb; }
+
+  /* Animación suave tema */
+  :root, [data-theme="dark"] body, [data-theme="dark"] .container {
+    transition: background-color .25s ease, color .25s ease;
+  }
+
+  /* Topbar (tema) */
+  /* Por defecto (inicio): solo el switch a la derecha */
+.topbar{
+display:flex; 
+justify-content:flex-end; 
+align-items:center; 
+gap:8px; 
+margin-bottom:8px;
+}
+
+/* La marca pequeña oculta en inicio */
+.topbar-brand{
+display:none;
+font-weight:700;
+}
+
+/* En modo entrenando: aparece la marca y separa extremos */
+.entrenando .topbar{
+justify-content:space-between;
+}
+.entrenando .topbar-brand{
+display:block;
+}
+
+
+  .theme-switch { position: relative; width: 64px; height: 32px; display: inline-block; }
+  .theme-switch input { display: none; }
+  .theme-switch .slider {
+    position: absolute; inset: 0;
+    background: #e5e7eb; border: 1px solid #cbd5e1; border-radius: 999px;
+    transition: background .2s, border-color .2s;
+  }
+  .theme-switch .slider::before {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    transition: transform .25s ease;
+  }
+  .theme-switch input:checked + .slider { background: #1f2937; border-color: #374151; }
+  .theme-switch input:checked + .slider::before { transform: translateX(32px); }
+  .theme-switch .icon { position: absolute; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
+  .theme-switch .sun { left: 8px; }
+  .theme-switch .moon { right: 8px; }
+  [data-theme="dark"] .theme-switch .slider { background: #0f172a; border-color: #334155; }
+  [data-theme="dark"] .theme-switch .slider::before { background: #111827; }
+
+  /* ====== MEJORAS MÓVIL ====== */
+  /* Título grande y legible en portada */
+  #titulo{
+    font-size: clamp(28px, 9vw, 44px);
+    font-weight: 900;
+    letter-spacing: .3px;
+    margin: 4px 0 10px;
+  }
+  /* Contador MUY grande en móvil */
+  #cuenta{
+    font-size: clamp(60px, 22vw, 140px);
+    line-height: 1;
+  }
+  /* Modo entrenamiento: ocupa toda la altura útil */
+  .entrenando body{ padding: 0; }
+  .entrenando .container{
+    border-radius: 0;
+    max-width: 100%;
+    min-height: 100svh;          /* altura útil del móvil */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 16px;
+    padding-top: 32px;
+    padding-top: calc(32px + constant(safe-area-inset-top));
+    padding-top: calc(32px + env(safe-area-inset-top));
+  }
+  /* Ocultar secciones que sobran en entreno */
+  .entrenando #formulario,
+  .entrenando #bloques,
+  .entrenando #seccionRutinas{ display: none !important; }
+  .entrenando #titulo{ display: none !important; }
+
+  /* Asegura jerarquía visual en entreno */
+  .entrenando #tituloEjercicio{
+    font-size: clamp(22px, 6vw, 32px);
+    font-weight: 800;
+    margin: 2px 0 4px;
+    min-height: 2.2em;
+  }
+  /* La barra siempre reservada en entreno */
+  .entrenando #progressWrap{
+    display: block !important;
+    visibility: visible !important;
+    margin-top: 8px;
+  }
+  .entrenando #cuenta{ margin-top: 6px; }
+  .entrenando #info{ margin-top: 8px; }
+
+  /* Botones cómodos */
+  #btnReset{
+    background-color: #dc3545;
+    color: white;
+  }
+
+  #btnReset:hover{
+    background-color: #c82333;
+  }
+
+  #btnPauseResume{
+    background-color: #FF9800;
+    color: white;
+  }
+
+  #btnPauseResume:hover{
+    background-color: #e68900;
+  }
+
+  #btnSkip{
+    background-color: #007BFF;
+    color: white;
+  }
+
+  #btnSkip:hover{
+    background-color: #0056b3;
+  }
+
+  /* Fallback visual de vibración (si el dispositivo no vibra) */
+  .container.vib-fx { animation: vib .25s linear 1; }
+  @keyframes vib {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-4px); }
+    40% { transform: translateX(4px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  /* ===== Pantalla inicial adaptada a móvil ===== */
+@media (max-width: 600px) {
+  body {
+    padding: 0;
+  }
+
+  .container {
     
-    function reiniciarEntrenamiento() {
-      clearInterval(timer); clearInterval(cronometroTotal); stopBeepIfAny();
-      enPausa = false; entrenoEnCurso = false; unlockScreen();
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+  }
+
+  #formulario {
+    padding-bottom: 20px;
+    gap: 12px; 
+    display: flex;
+    flex-direction: column;
+  }
+
+  #formulario label {
+    font-size: 15px;
+    margin-bottom: 4px;
+
+  }
+
+  #formulario input {
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  #formulario button {
+    font-size: 18px;
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: bold;
+  }
+
+  #formulario buttom:nth-of-type(2) {
+    background-color: #28a754;
+    color: white;
+
+  }
+
+  #formulario button:nth-of-type(2):hover {
+    background-color: #c82333;
+  }
+    
   
-      document.getElementById('mensaje').innerText = "";
-      document.getElementById('mensaje').classList.remove('mensaje-final');
-      document.getElementById('cuenta').innerText = "00";
-      document.getElementById('tiempoTotal').innerText = "0";
-      document.getElementById('seriesCompletadas').innerText = "0";
-      document.getElementById('btnReset').style.display = 'none';
-      document.getElementById('btnPauseResume').style.display = 'none';
-      document.getElementById('btnSkip').style.display = 'none';
-      document.getElementById('formulario').classList.remove('oculto');
-      document.getElementById('bloques').classList.remove('oculto');
-      document.getElementById('bloques').innerHTML = '';
-      document.getElementById('cuenta').style.display = 'none';
-      document.getElementById('seccionRutinas').style.display = 'block';
-  
-      limpiarCampos();
-      bloques = [];
-      guardarRutinas();
-  
-      ocultarBarra();
-      document.getElementById('progressWrap').style.display = 'none';
-  
-      mostrarTituloConTañ();
-      mostrarTituloEjercicio('');
-      ocultarTituloEjercicio();
-  
-      setEntrenandoUI(false);           // <<<<<< desactivar UI de entreno
-    }
-  
-    function limpiarCampos() {
-      document.getElementById('nombre').value = '';
-      document.getElementById('series').value = '';
-      document.getElementById('serieTime').value = '';
-      document.getElementById('descansoTime').value = '';
-      document.getElementById('descansoBloque').value = '';
-    }
-  
-    function iniciarCronometroTotal() {
-      clearInterval(cronometroTotal);
-      cronometroTotal = setInterval(() => {
-        if (!enPausa) {
-          tiempoTotal++;
-          document.getElementById('tiempoTotal').innerText = tiempoTotal;
-        }
-      }, 1000);
-    }
-  
-    // Rutinas (localStorage)
-    function guardarRutinas() { localStorage.setItem('rutinas', JSON.stringify(bloques)); }
-    function cargarRutinas() {
-      const datos = localStorage.getItem('rutinas');
-      if (datos) {
-        bloques = JSON.parse(datos);
-        bloques.forEach(b => {
-          const div = document.createElement('div');
-          div.className = 'bloque-item';
-          div.textContent = `${b.nombre} - ${b.series}x${b.serieTime}s + ${b.descansoTime}s descanso, ${b.descansoBloque}s entre bloques`;
-          document.getElementById('bloques').appendChild(div);
-        });
-      }
-    }
-    function guardarComoRutina() {
-      const nombre = document.getElementById('nombreRutina').value.trim();
-      if (!nombre) { alert("Pon un nombre para la rutina."); return; }
-      let rutinasGuardadas = JSON.parse(localStorage.getItem('rutinasGuardadas')) || {};
-      rutinasGuardadas[nombre] = bloques;
-      localStorage.setItem('rutinasGuardadas', JSON.stringify(rutinasGuardadas));
-      actualizarSelectRutinas();
-      alert(`Rutina "${nombre}" guardada.`);
-    }
-    function actualizarSelectRutinas() {
-      const select = document.getElementById('selectRutinas');
-      select.innerHTML = '<option value="">--Selecciona una rutina--</option>';
-      const rutinas = JSON.parse(localStorage.getItem('rutinasGuardadas')) || {};
-      for (const nombre in rutinas) {
-        const option = document.createElement('option');
-        option.value = nombre; option.textContent = nombre; select.appendChild(option);
-      }
-    }
-    function cargarRutinaSeleccionada() {
-      const nombre = document.getElementById('selectRutinas').value;
-      if (!nombre) return;
-      const rutinas = JSON.parse(localStorage.getItem('rutinasGuardadas')) || {};
-      if (rutinas[nombre]) {
-        bloques = rutinas[nombre];
-        document.getElementById('bloques').innerHTML = '';
-        bloques.forEach(b => {
-          const div = document.createElement('div');
-          div.className = 'bloque-item';
-          div.textContent = `${b.nombre} - ${b.series}x${b.serieTime}s + ${b.descansoTime}s descanso, ${b.descansoBloque}s entre bloques`;
-          document.getElementById('bloques').appendChild(div);
-        });
-      }
-    }
-    function eliminarRutina() {
-      const nombre = document.getElementById('selectRutinas').value;
-      if (!nombre) return;
-      const rutinas = JSON.parse(localStorage.getItem('rutinasGuardadas')) || {};
-      delete rutinas[nombre];
-      localStorage.setItem('rutinasGuardadas', JSON.stringify(rutinas));
-      actualizarSelectRutinas();
-      alert(`Rutina "${nombre}" eliminada.`);
-    }
-  
-    // Tema
-    function setTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      try { localStorage.setItem('theme', theme); } catch(_) {}
-      const sw = document.getElementById('themeSwitch');
-      if (sw) sw.checked = (theme === 'dark');
-    }
-    function toggleThemeSwitch(el) { setTheme(el && el.checked ? 'dark' : 'light'); }
-    function initTheme() {
-      let theme = 'light';
-      try {
-        const saved = localStorage.getItem('theme');
-        if (saved) theme = saved;
-        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
-      } catch(_) {}
-      setTheme(theme);
-    }
-  
-    window.onload = () => {
-      initTheme();
-      cargarRutinas();
-      actualizarSelectRutinas();
-    };
-  
-    // PWA opcional
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(()=>{});
-    }
-  </script>
-  <script src="app.js"></script>
-</body>
-</html>
+  input, button, select {
+    font-size: 18px;   /* más grande en móvil */
+    min-height: 48px;  /* botones cómodos */
+    margin-bottom: 10px;
+  }
+
+  #titulo {
+    font-size: clamp(26px, 8vw, 40px);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+}
+
+/* Botón principal de iniciar entrenamiento */
+button.iniciar {
+  background-color: #28a745; /* Verde */
+  font-size: 18px;
+  font-weight: bold;
+  min-height: 50px;
+}
+button.iniciar:hover {
+  background-color: #218838;
+}
+
+/* Evitar que en modo oscuro se pinte azul */
+[data-theme="dark"] button.iniciar {
+  background-color: #28a745; /* Mismo verde */
+}
+[data-theme="dark"] button.iniciar:hover {
+  background-color: #218838;
+}
+/* ===== Pantalla de carga ===== */
+#splash {
+  position: fixed;
+  inset: 0;
+  background: #0f172a; /* mismo color que manifest.json */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 9999;
+  transition: opacity 0.6s ease;
+}
+
+#splash img {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 20px;
+}
+
+#splash.oculto {
+  opacity: 0;
+  pointer-events: none;
+}
+
+
