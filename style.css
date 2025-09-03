@@ -50,13 +50,7 @@
   .oculto { display: none; }
 
   /* Título principal con transición */
-  #titulo { 
-    transition: opacity .25s ease, transform .25s ease;
-    font-size: clamp(248px, 9vw, 44px);
-    font-weight: 900;
-    text-align: center;
-    margin-bottom: 16px;
-  }
+  #titulo { transition: opacity .25s ease, transform .25s ease; }
   .titulo-oculto { opacity: 0; transform: translateY(-8px); pointer-events: none; }
 
   /* Título del ejercicio (modo entrenamiento) */
@@ -258,39 +252,20 @@ display:block;
   }
 
   .container {
-    
+    border-radius: 0;
+    max-width: 100%;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    
+    justify-content: flex-start;
+    padding: 16px;
+    box-shadow: none; /* más limpio en móvil */
   }
 
   #formulario {
-    padding-bottom: 20px;
-    gap: 12px; 
+    flex: 1; /* ocupa espacio vertical */
     display: flex;
     flex-direction: column;
-  }
-
-  #formulario label {
-    font-size: 15px;
-    margin-bottom: 4px;
-
-  }
-
-  #formulario input {
-    font-size: 16px;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-  }
-
-  #formulario button {
-    font-size: 18px;
-    padding: 14px;
-    border-radius: 10px;
-    font-weight: bold;
   }
 
   #formulario buttom:nth-of-type(2) {
@@ -304,6 +279,7 @@ display:block;
   }
     
   
+
   input, button, select {
     font-size: 18px;   /* más grande en móvil */
     min-height: 48px;  /* botones cómodos */
