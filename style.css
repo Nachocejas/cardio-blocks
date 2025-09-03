@@ -15,18 +15,7 @@
     width: 100%; padding: 12px; margin: 5px 0; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;
   }
 
-  button { 
-    background-color: #007BFF;
-     color: white; 
-     border: none; 
-     cursor: pointer; 
-     width: 100%; 
-     padding: 12px; 
-     margin: 5px 0; 
-     font-size: 16px; 
-     border-radius: 8px;
-     cursor: pointer;
-    }
+  button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
   button:hover { background-color: #0056b3; }
   button.iniciar {
     background-color: #28a745;
@@ -84,13 +73,6 @@
     transition: transform 0.2s linear;
     will-change: transform;
   }
-
-  /* Barra de progreso colores */
-
-/* Estados */
-  .progress__bar.serie { background: #28a745; }          /* verde */
-  .progress__bar.descanso { background: #ff9800; }       /* naranja */
-  .progress__bar.descansoBloque { background: #6f42c1; } /* morado */
   .progress__text { font-size: 12px; margin-top: 6px; color: #555; }
 
   /* === Modo oscuro =================================================== */
@@ -208,31 +190,9 @@ display:block;
   .entrenando #info{ margin-top: 8px; }
 
   /* Botones cómodos */
-  #btnReset{
-    background-color: #dc3545;
-    color: white;
-  }
-
-  #btnReset:hover{
-    background-color: #c82333;
-  }
-
-  #btnPauseResume{
-    background-color: #FF9800;
-    color: white;
-  }
-
-  #btnPauseResume:hover{
-    background-color: #e68900;
-  }
-
-  #btnSkip{
-    background-color: #007BFF;
-    color: white;
-  }
-
-  #btnSkip:hover{
-    background-color: #0056b3;
+  #btnReset, #btnPauseResume, #btnSkip{
+    min-height: 48px;
+    font-size: 16px;
   }
 
   /* Fallback visual de vibración (si el dispositivo no vibra) */
@@ -268,18 +228,6 @@ display:block;
     flex-direction: column;
   }
 
-  #formulario buttom:nth-of-type(2) {
-    background-color: #28a754;
-    color: white;
-
-  }
-
-  #formulario button:nth-of-type(2):hover {
-    background-color: #c82333;
-  }
-    
-  
-
   input, button, select {
     font-size: 18px;   /* más grande en móvil */
     min-height: 48px;  /* botones cómodos */
@@ -311,30 +259,6 @@ button.iniciar:hover {
 }
 [data-theme="dark"] button.iniciar:hover {
   background-color: #218838;
-}
-/* ===== Pantalla de carga ===== */
-#splash {
-  position: fixed;
-  inset: 0;
-  background: #0f172a; /* mismo color que manifest.json */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  z-index: 9999;
-  transition: opacity 0.6s ease;
-}
-
-#splash img {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 20px;
-}
-
-#splash.oculto {
-  opacity: 0;
-  pointer-events: none;
 }
 
 
