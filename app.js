@@ -174,64 +174,72 @@ function stopBeepIfAny() {
   if (currentOsc) { try { currentOsc.onended = null; currentOsc.stop(); } catch(e) {} currentOsc = null; }
 }
 
-function sonidoSerie() {
-  vibrar(200);
-  beep(440, 800, "sine");
-}
-
-function sonidoDescanso() {
-  vibrar(100);
-  beep(880, 300, "square");
-}
-
-function sonidoDescansoBloque() {
-  vibrar(150);
-  beep(660, 200, "triangle");
-  setTimeout(() => beep(660, 200, "triangle"), 250);
-}
-
-function sonidoFin() {
-  vibrar(300);
-  beep(440, 500, "sawtooth");
-}
-
-// helper genérico
-function beep(frequency = 440, duration = 500, type = "sine") {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.value = frequency;
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-  osc.stop(audioCtx.currentTime + duration / 1000);
-}
-
 // Beeps
 function reproducirBeepInicio(callback) {
   vibrar(150);
   faseActual = 'beepSerie';
-  sonidoSerie();
-  setTimeout(() => { if (!enPausa && typeof callback === 'function') callback(); }, 800);
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  currentOsc = osc;
+
+  osc.type = 'sine'; osc.frequency.value = 440;
+  const now = audioCtx.currentTime;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
+  gain.gain.setValueAtTime(0.2, now + 3 - 0.02);
+  gain.gain.linearRampToValueAtTime(0, now + 3);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(now); osc.stop(now + 3);
+  osc.onended = () => { currentOsc = null; if (!enPausa && typeof callback === 'function') callback(); };
+  ocultarBarra();
 }
 
 function reproducirBeepDescanso(callback) {
   vibrar(150);
   faseActual = 'beepDescanso';
-  sonidoDescanso();
-  setTimeout(() => { if (!enPausa && typeof callback === 'function') callback(); }, 300);
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  currentOsc = osc;
+
+  osc.type = 'sine'; osc.frequency.value = 440;
+  const now = audioCtx.currentTime;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
+  gain.gain.setValueAtTime(0.2, now + 1 - 0.02);
+  gain.gain.linearRampToValueAtTime(0, now + 1);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(now); osc.stop(now + 1);
+  osc.onended = () => { currentOsc = null; if (!enPausa && typeof callback === 'function') callback(); };
+  ocultarBarra();
 }
 
 function reproducirBeepDescansoBloque(callback) {
   vibrar(150);
   faseActual = 'beepBloque';
-  sonidoDescansoBloque();
-  setTimeout(() => { if (!enPausa && typeof callback === 'function') callback(); }, 500);
-}
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
 
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  currentOsc = osc;
+
+  osc.type = 'square'; osc.frequency.value = 660;
+  const now = audioCtx.currentTime;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
+  gain.gain.setValueAtTime(0.2, now + 1 - 0.02);
+  gain.gain.linearRampToValueAtTime(0, now + 1);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(now); osc.stop(now + 1);
+  osc.onended = () => { currentOsc = null; if (!enPausa && typeof callback === 'function') callback(); };
+  ocultarBarra();
+}
 
 // Flujo
 function iniciarSerie() {
@@ -618,8 +626,4 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarRutinas();
   actualizarSelectRutinas();
 });
-
-
-
-
 
