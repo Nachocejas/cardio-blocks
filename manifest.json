@@ -1,10 +1,13 @@
 {
   "name": "Cardio Blocks",
   "short_name": "Cardio Blocks",
-  "start_url": "/",
+  "start_url": "/cardio-blocks/",
+  "scope": "/cardio-blocks/",
+
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#007BFF",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+
 
   "icons": [
     {
@@ -24,5 +27,3 @@
     }
   ]
 }
-
-
