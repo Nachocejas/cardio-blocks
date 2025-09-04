@@ -106,6 +106,9 @@ function setEntrenandoUI(on){
   document.documentElement.classList.toggle('entrenando', !!on);
 }
 
+// ==========================
+// Bloques
+// ==========================
 function agregarBloque() {
   const nombre = document.getElementById('nombre').value;
   const series = parseInt(document.getElementById('series').value);
@@ -129,7 +132,9 @@ function agregarBloque() {
   guardarRutinas();
 }
 
-// ===== Inicio/flujo =====
+// ==========================
+// Flujo de entrenamiento
+// ==========================
 function iniciarEntrenamiento() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -166,15 +171,17 @@ function iniciarEntrenamiento() {
   ocultarTituloConTañ();
   ocultarTituloEjercicio();
 
-  setEntrenandoUI(true);             // <<<<<< activar UI de entreno
+  setEntrenandoUI(true);
   iniciarSerie();
 }
 
+// ==========================
+// Beeps
+// ==========================
 function stopBeepIfAny() {
   if (currentOsc) { try { currentOsc.onended = null; currentOsc.stop(); } catch(e) {} currentOsc = null; }
 }
 
-// Beeps
 function reproducirBeepInicio(callback) {
   vibrar(150);
   faseActual = 'beepSerie';
@@ -241,7 +248,9 @@ function reproducirBeepDescansoBloque(callback) {
   ocultarBarra();
 }
 
+// ==========================
 // Flujo
+// ==========================
 function iniciarSerie() {
   const bloque = bloques[bloqueActual];
   if (serieActual < bloque.series) {
@@ -281,7 +290,9 @@ function iniciarDescansoBloque() {
   });
 }
 
+// ==========================
 // Temporizador preciso
+// ==========================
 function cuentaAtras(segundos, callback, etapa) {
   faseActual = etapa || faseActual || null;
   totalEtapa = segundos;
@@ -368,7 +379,9 @@ function actualizarProgreso() {
   txt.innerText = `${nombreEtapa(faseActual)}: ${transcurrido}/${totalEtapa}s`;
 }
 
+// ==========================
 // Pausar / Reanudar
+// ==========================
 function togglePausa() {
   const btn = document.getElementById('btnPauseResume');
   if (!enPausa) {
@@ -392,7 +405,9 @@ function togglePausa() {
   }
 }
 
+// ==========================
 // Saltar ciclo
+// ==========================
 function saltarCiclo() {
   if (timer) { clearInterval(timer); timer = null; }
   stopBeepIfAny();
@@ -420,6 +435,9 @@ function saltarCiclo() {
   }
 }
 
+// ==========================
+// Finalizar / Reset
+// ==========================
 function finalizarEntrenamiento() {
   clearInterval(timer); clearInterval(cronometroTotal); stopBeepIfAny();
   enPausa = false; entrenoEnCurso = false; unlockScreen();
@@ -445,7 +463,7 @@ function finalizarEntrenamiento() {
   mostrarTituloEjercicio('');
   ocultarTituloEjercicio();
 
-  setEntrenandoUI(false);           // <<<<<< desactivar UI de entreno
+  setEntrenandoUI(false);
 }
 
 function confirmarReset() {
@@ -482,9 +500,12 @@ function reiniciarEntrenamiento() {
   mostrarTituloEjercicio('');
   ocultarTituloEjercicio();
 
-  setEntrenandoUI(false);           // <<<<<< desactivar UI de entreno
+  setEntrenandoUI(false);
 }
 
+// ==========================
+// Helpers varios
+// ==========================
 function limpiarCampos() {
   document.getElementById('nombre').value = '';
   document.getElementById('series').value = '';
@@ -503,7 +524,9 @@ function iniciarCronometroTotal() {
   }, 1000);
 }
 
+// ==========================
 // Rutinas (localStorage)
+// ==========================
 function guardarRutinas() { localStorage.setItem('rutinas', JSON.stringify(bloques)); }
 function cargarRutinas() {
   const datos = localStorage.getItem('rutinas');
@@ -560,7 +583,9 @@ function eliminarRutina() {
   alert(`Rutina "${nombre}" eliminada.`);
 }
 
+// ==========================
 // Tema
+// ==========================
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   try { localStorage.setItem('theme', theme); } catch(_) {}
@@ -578,58 +603,25 @@ function initTheme() {
   setTheme(theme);
 }
 
-window.onload = () => {
-  initTheme();
-  cargarRutinas();
-  actualizarSelectRutinas();
-};
-
-// PWA opcional
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
-
 // ==========================
-// Inicialización
+// Inicialización (Splash + Tema + Rutinas)
 // ==========================
-document.addEventListener("DOMContentLoaded", () => {
-  initTheme();
-  cargarRutinas();
-  actualizarSelectRutinas();
-});
-
-// ==========================
-// PWA opcional
-// ==========================
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    const splash = document.getElementById("splash");
-    if (splash) splash.classList.add("oculto");
-  }, 800); // 0.8s: ajusta al gusto
-  initTheme();
-  cargarRutinas();
-  actualizarSelectRutinas();
-  
-});
-
-
-
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
   // Ocultar splash después de 1 segundo
   setTimeout(() => {
-    document.getElementById("splash").classList.add("oculto");
+    const splash = document.getElementById("splash");
+    if (splash) splash.classList.add("oculto");
   }, 1000);
 
-  // Lo que ya tenías
+  // Inicializar tema y rutinas
   initTheme();
   cargarRutinas();
   actualizarSelectRutinas();
 });
 
+// ==========================
+// PWA opcional (Service Worker)
+// ==========================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
