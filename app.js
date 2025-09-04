@@ -605,15 +605,21 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
 
-
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    const splash = document.getElementById("splash");
+    if (splash) splash.classList.add("oculto");
+  }, 800); // 0.8s: ajusta al gusto
   initTheme();
   cargarRutinas();
   actualizarSelectRutinas();
+  
 });
+
+
+
+
+
 
 document.addEventListener("DOMContentLoaded", () => {
   // Ocultar splash después de 1 segundo
