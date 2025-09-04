@@ -1,364 +1,94 @@
-
-  body {
-    font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0;
-    display: flex; align-items: center; justify-content: center; min-height: 100vh;
-  }
-
-  .container {
-    background-color: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    max-width: 400px; width: 100%; text-align: center; box-sizing: border-box; overflow-wrap: break-word; overflow: hidden;
-  }
-
-  label { display: block; text-align: left; margin-top: 10px; margin-bottom: 4px; font-weight: bold; }
-
-  input, button, select {
-    width: 100%; padding: 12px; margin: 5px 0; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;
-  }
-
-  button { 
-    background-color: #007BFF;
-     color: white; 
-     border: none; 
-     cursor: pointer; 
-     width: 100%; 
-     padding: 12px; 
-     margin: 5px 0; 
-     font-size: 16px; 
-     border-radius: 8px;
-     cursor: pointer;
-    }
-  button:hover { background-color: #0056b3; }
-  button.iniciar {
-    background-color: #28a745;
-    font-size: 18px;
-    font-weight: bold;
-    min-height: 50px;
-  }
-  button.iniciar:hover {
-    background-color: #218838;
-  }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cardio Blocks</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
   
-
-  #mensaje { display: none !important; }
-  #cuenta { font-size: 48px; margin-top: 10px; transition: transform 0.2s ease-in-out; display: none; }
-  #cuenta.animar { transform: scale(1.3); }
-
-  #info { margin-top: 10px; font-size: 14px; }
-  #bloques { margin-top: 15px; text-align: left; }
-  .bloque-item { background: #e0e0e0; padding: 10px; border-radius: 8px; margin-bottom: 5px; }
-
-  .oculto { display: none; }
-
-  /* Título principal con transición */
-  #titulo { 
-    transition: opacity .25s ease, transform .25s ease;
-    font-size: clamp(248px, 9vw, 44px);
-    font-weight: 900;
-    text-align: center;
-    margin-bottom: 16px;
-  }
-  .titulo-oculto { opacity: 0; transform: translateY(-8px); pointer-events: none; }
-
-  /* Título del ejercicio (modo entrenamiento) */
-  #tituloEjercicio {
-    font-size: clamp(24px, 6vw, 32px);
-    font-weight: 800;
-    margin: 0 0 6px 0;
-    min-height: 2.6em;          /* reserva estable */
-    display: flex; align-items: center; justify-content: center;
-    text-align: center;
-  }
-
-  /* (Antigua regla móvil que hacía pequeño el H1) — no la usamos ya */
-  /* @media (max-width: 500px) { h1 { font-size: 20px; } } */
-
-  /* ===== Progreso ===== */
-  #progressWrap {
-    margin-top: 10px;
-    text-align: left;
-    display: none;              /* se mostrará al iniciar entreno */
-  }
-  .progress {
-    height: 14px;               /* más alta para móvil */
-    background: #e6e6e6; border-radius: 8px; overflow: hidden;
-  }
-  .progress__bar{
-    height: 100%;
-    width: 100%;
-    transform-origin: left;
-    transform: scaleX(0);
-    transition: transform 0.2s linear;
-    will-change: transform;
-  }
-
-  /* Barra de progreso colores */
-
-/* Estados */
-  .progress__bar.serie { background: #28a745; }          /* verde */
-  .progress__bar.descanso { background: #ff9800; }       /* naranja */
-  .progress__bar.descansoBloque { background: #6f42c1; } /* morado */
-  .progress__text { font-size: 12px; margin-top: 6px; color: #555; }
-
-  /* === Modo oscuro =================================================== */
-  :root { color-scheme: light; }
-  [data-theme="dark"] { color-scheme: dark; }
-  [data-theme="dark"] body { background-color: #0f172a; color: #e5e7eb; }
-  [data-theme="dark"] .container { background-color: #111827; box-shadow: 0 0 10px rgba(0,0,0,.4); }
-  [data-theme="dark"] input, [data-theme="dark"] select { background-color: #0b1220; border-color: #374151; color: #e5e7eb; }
-  [data-theme="dark"] button { background-color: #2563eb; }
-  [data-theme="dark"] button:hover { background-color: #1d4ed8; }
-  [data-theme="dark"] .bloque-item { background: #1f2937; }
-  [data-theme="dark"] .progress { background: #1f2937; border-color: #374151; }
-  [data-theme="dark"] .progress__bar { background: #60a5fa; }
-  [data-theme="dark"] #titulo { color: #e5e7eb; }
-  [data-theme="dark"] #tituloEjercicio { color: #f9fafb; }
-
-  /* Animación suave tema */
-  :root, [data-theme="dark"] body, [data-theme="dark"] .container {
-    transition: background-color .25s ease, color .25s ease;
-  }
-
-  /* Topbar (tema) */
-  /* Por defecto (inicio): solo el switch a la derecha */
-.topbar{
-display:flex; 
-justify-content:flex-end; 
-align-items:center; 
-gap:8px; 
-margin-bottom:8px;
-}
-
-/* La marca pequeña oculta en inicio */
-.topbar-brand{
-display:none;
-font-weight:700;
-}
-
-/* En modo entrenando: aparece la marca y separa extremos */
-.entrenando .topbar{
-justify-content:space-between;
-}
-.entrenando .topbar-brand{
-display:block;
-}
-
-
-  .theme-switch { position: relative; width: 64px; height: 32px; display: inline-block; }
-  .theme-switch input { display: none; }
-  .theme-switch .slider {
-    position: absolute; inset: 0;
-    background: #e5e7eb; border: 1px solid #cbd5e1; border-radius: 999px;
-    transition: background .2s, border-color .2s;
-  }
-  .theme-switch .slider::before {
-    content: ""; position: absolute; top: 3px; left: 3px;
-    width: 26px; height: 26px; border-radius: 50%;
-    background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2);
-    transition: transform .25s ease;
-  }
-  .theme-switch input:checked + .slider { background: #1f2937; border-color: #374151; }
-  .theme-switch input:checked + .slider::before { transform: translateX(32px); }
-  .theme-switch .icon { position: absolute; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
-  .theme-switch .sun { left: 8px; }
-  .theme-switch .moon { right: 8px; }
-  [data-theme="dark"] .theme-switch .slider { background: #0f172a; border-color: #334155; }
-  [data-theme="dark"] .theme-switch .slider::before { background: #111827; }
-
-  /* ====== MEJORAS MÓVIL ====== */
-  /* Título grande y legible en portada */
-  #titulo{
-    font-size: clamp(28px, 9vw, 44px);
-    font-weight: 900;
-    letter-spacing: .3px;
-    margin: 4px 0 10px;
-  }
-  /* Contador MUY grande en móvil */
-  #cuenta{
-    font-size: clamp(60px, 22vw, 140px);
-    line-height: 1;
-  }
-  /* Modo entrenamiento: ocupa toda la altura útil */
-  .entrenando body{ padding: 0; }
-  .entrenando .container{
-    border-radius: 0;
-    max-width: 100%;
-    min-height: 100svh;          /* altura útil del móvil */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 16px;
-    padding-top: 32px;
-    padding-top: calc(32px + constant(safe-area-inset-top));
-    padding-top: calc(32px + env(safe-area-inset-top));
-  }
-  /* Ocultar secciones que sobran en entreno */
-  .entrenando #formulario,
-  .entrenando #bloques,
-  .entrenando #seccionRutinas{ display: none !important; }
-  .entrenando #titulo{ display: none !important; }
-
-  /* Asegura jerarquía visual en entreno */
-  .entrenando #tituloEjercicio{
-    font-size: clamp(22px, 6vw, 32px);
-    font-weight: 800;
-    margin: 2px 0 4px;
-    min-height: 2.2em;
-  }
-  /* La barra siempre reservada en entreno */
-  .entrenando #progressWrap{
-    display: block !important;
-    visibility: visible !important;
-    margin-top: 8px;
-  }
-  .entrenando #cuenta{ margin-top: 6px; }
-  .entrenando #info{ margin-top: 8px; }
-
-  /* Botones cómodos */
-  #btnReset{
-    background-color: #dc3545;
-    color: white;
-  }
-
-  #btnReset:hover{
-    background-color: #c82333;
-  }
-
-  #btnPauseResume{
-    background-color: #FF9800;
-    color: white;
-  }
-
-  #btnPauseResume:hover{
-    background-color: #e68900;
-  }
-
-  #btnSkip{
-    background-color: #007BFF;
-    color: white;
-  }
-
-  #btnSkip:hover{
-    background-color: #0056b3;
-  }
-
-  /* Fallback visual de vibración (si el dispositivo no vibra) */
-  .container.vib-fx { animation: vib .25s linear 1; }
-  @keyframes vib {
-    0%,100% { transform: translateX(0); }
-    20% { transform: translateX(-4px); }
-    40% { transform: translateX(4px); }
-    60% { transform: translateX(-4px); }
-    80% { transform: translateX(4px); }
-  }
-
-  /* ===== Pantalla inicial adaptada a móvil ===== */
-@media (max-width: 600px) {
-  body {
-    padding: 0;
-  }
-
-  .container {
-    
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    
-  }
-
-  #formulario {
-    padding-bottom: 20px;
-    gap: 12px; 
-    display: flex;
-    flex-direction: column;
-  }
-
-  #formulario label {
-    font-size: 15px;
-    margin-bottom: 4px;
-
-  }
-
-  #formulario input {
-    font-size: 16px;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-  }
-
-  #formulario button {
-    font-size: 18px;
-    padding: 14px;
-    border-radius: 10px;
-    font-weight: bold;
-  }
-
-  #formulario buttom:nth-of-type(2) {
-    background-color: #28a754;
-    color: white;
-
-  }
-
-  #formulario button:nth-of-type(2):hover {
-    background-color: #c82333;
-  }
-    
+</head>
+<body>
+  <div id="splash">
+    <img src="icon-192.png" alt="Cardio Blocks" />
+    <h1>Cardio Blocks</h1>
+  </div>
   
-  input, button, select {
-    font-size: 18px;   /* más grande en móvil */
-    min-height: 48px;  /* botones cómodos */
-    margin-bottom: 10px;
-  }
+  <div class="container">
+    <div class="topbar">
+      <div class="topbar-brand">Cardio Blocks</div>
+      <div class="topbar-right">
+        <!-- Interruptor de Tema -->
+        <label class="theme-switch" title="Cambiar tema">
+          <input id="themeSwitch" type="checkbox" onchange="toggleThemeSwitch(this)">
+          <span class="slider">
+            <span class="icon sun">☀️</span>
+            <span class="icon moon">🌙</span>
+          </span>
+        </label>
+      </div>
+    </div>
+  
+    <h1 id="titulo">Cardio Blocks</h1>
+    <h2 id="tituloEjercicio" class="oculto" aria-live="polite"></h2>
+      
+    <div id="formulario">
+      <label for="nombre">Nombre del ejercicio</label>
+      <input type="text" id="nombre" placeholder="Ej: Flexiones">
+  
+      <label for="series">N.º de series</label>
+      <input type="number" id="series" placeholder="Por ejemplo: 3">
+  
+      <label for="serieTime">Tiempo de serie (segundos)</label>
+      <input type="number" id="serieTime" placeholder="Por ejemplo: 30">
+  
+      <label for="descansoTime">Tiempo de descanso entre series (segundos)</label>
+      <input type="number" id="descansoTime" placeholder="Por ejemplo: 15">
+  
+      <label for="descansoBloque">Descanso tras bloque (segundos)</label>
+      <input type="number" id="descansoBloque" placeholder="Por ejemplo: 30">
+  
+      <button onclick="agregarBloque()">Añadir ejercicio</button>
+      <button class="iniciar" onclick="iniciarEntrenamiento()">Iniciar entrenamiento</button>
 
-  #titulo {
-    font-size: clamp(26px, 8vw, 40px);
-    font-weight: 800;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-}
-
-/* Botón principal de iniciar entrenamiento */
-button.iniciar {
-  background-color: #28a745; /* Verde */
-  font-size: 18px;
-  font-weight: bold;
-  min-height: 50px;
-}
-button.iniciar:hover {
-  background-color: #218838;
-}
-
-/* Evitar que en modo oscuro se pinte azul */
-[data-theme="dark"] button.iniciar {
-  background-color: #28a745; /* Mismo verde */
-}
-[data-theme="dark"] button.iniciar:hover {
-  background-color: #218838;
-}
-/* ===== Pantalla de carga ===== */
-#splash {
-  position: fixed;
-  inset: 0;
-  background: #0f172a; /* mismo color que manifest.json */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  z-index: 9999;
-  transition: opacity 0.6s ease;
-}
-
-#splash img {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 20px;
-}
-
-#splash.oculto {
-  opacity: 0;
-  pointer-events: none;
-}
-
-
+    </div>
+  
+    <div id="bloques"></div>
+    <div id="mensaje"></div>
+  
+    <div id="cuenta" aria-live="polite">00</div>
+  
+    <div id="progressWrap">
+      <div class="progress">
+        <div id="progressBar" class="progress__bar"></div>
+      </div>
+      <div id="progressText" class="progress__text">Preparado…</div>
+    </div>
+  
+    <div id="info">
+      <p>⏱ Tiempo total: <span id="tiempoTotal">0</span> s</p>
+      <p>✅ Series completadas: <span id="seriesCompletadas">0</span></p>
+    </div>
+  
+    <button onclick="confirmarReset()" id="btnReset" style="display:none;">Reset</button>
+    <button onclick="togglePausa()" id="btnPauseResume" style="display:none;">Pausar</button>
+    <button onclick="saltarCiclo()" id="btnSkip" style="display:none;">Saltar ciclo</button>
+  
+    <div id="seccionRutinas">
+      <hr>
+      <h3>Rutinas guardadas</h3>
+      <input type="text" id="nombreRutina" placeholder="Nombre de la rutina">
+      <button onclick="guardarComoRutina()">Guardar como rutina</button>
+  
+      <select id="selectRutinas" onchange="cargarRutinaSeleccionada()">
+        <option value="">--Selecciona una rutina--</option>
+      </select>
+      <button onclick="eliminarRutina()">Eliminar rutina seleccionada</button>
+    </div>
+  </div>
+  
+  
+  <script src="app.js"></script>
+</body>
+</html>
