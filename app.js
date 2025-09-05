@@ -12,11 +12,20 @@ let entrenoEnCurso = false;
 
 // Estado
 let enPausa = false;
-let faseActual = null; // 'beepSerie' | 'serie' | 'beepDescanso' | 'descanso' | 'beepBloque' | 'descansoBloque'
+let faseActual = null; 
 let cuentaCallback = null;
 let tiempoGuardado = 0;
 let currentOsc = null;
 let totalEtapa = 0;
+
+// ==========================
+// Volumen maestro
+// ==========================
+let masterVolume = parseFloat(localStorage.getItem('masterVolume')) || 0.5;
+function setMasterVolume(value) {
+  masterVolume = Math.min(1, Math.max(0, value));
+  localStorage.setItem('masterVolume', masterVolume);
+}
 
 // ==========================
 // Wake Lock + eventos
@@ -53,22 +62,80 @@ function vibrar(ms = 150) {
 }
 
 // ==========================
-// Sonido corto (marca visual)
+// Sonidos
 // ==========================
-function sonarTañ(durMs = 200) {
+function playTone(freq, durMs = 300, type = 'sine') {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = type;
+  osc.frequency.value = freq;
+
   const now = audioCtx.currentTime;
-  const o1 = audioCtx.createOscillator();
-  const o2 = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o1.type = 'sine'; o1.frequency.value = 880;
-  o2.type = 'sine'; o2.frequency.value = 1320;
-  g.gain.setValueAtTime(0.0001, now);
-  g.gain.linearRampToValueAtTime(0.25, now + 0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001, now + durMs / 1000);
-  o1.connect(g); o2.connect(g); g.connect(audioCtx.destination);
-  o1.start(now); o2.start(now); o1.stop(now + durMs/1000); o2.stop(now + durMs/1000);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(masterVolume, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + durMs / 1000);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start(now);
+  osc.stop(now + durMs / 1000);
+}
+
+// Pre-cuenta atrás (3-2-1)
+function reproducirPreCuenta(callback) {
+  vibrar(100);
+  faseActual = 'preCuenta';
+  let delay = 0;
+  [880, 660, 440].forEach((f) => {
+    setTimeout(() => playTone(f, 250, 'sine'), delay);
+    delay += 600;
+  });
+  setTimeout(() => {
+    if (!enPausa && typeof callback === 'function') callback();
+  }, delay);
+}
+
+// Beeps personalizados
+function reproducirBeepInicio(callback) {
+  vibrar(150);
+  faseActual = 'beepSerie';
+  reproducirPreCuenta(() => {
+    playTone(880, 500, 'sine');
+    if (!enPausa && typeof callback === 'function') callback();
+  });
+  ocultarBarra();
+}
+
+function reproducirBeepDescanso(callback) {
+  vibrar(150);
+  faseActual = 'beepDescanso';
+  playTone(660, 400, 'triangle');
+  setTimeout(() => {
+    if (!enPausa && typeof callback === 'function') callback();
+  }, 400);
+  ocultarBarra();
+}
+
+function reproducirBeepDescansoBloque(callback) {
+  vibrar(200);
+  faseActual = 'beepBloque';
+  playTone(520, 500, 'square');
+  setTimeout(() => {
+    if (!enPausa && typeof callback === 'function') callback();
+  }, 500);
+  ocultarBarra();
+}
+
+// Beep final especial
+function reproducirBeepFinal() {
+  vibrar([200,100,200]);
+  playTone(220, 800, 'sawtooth');
+  setTimeout(() => playTone(440, 500, 'sine'), 900);
 }
 
 // ==========================
@@ -77,7 +144,6 @@ function sonarTañ(durMs = 200) {
 function ocultarTituloConTañ() {
   const t = document.getElementById('titulo');
   if (!t) return;
-  sonarTañ(200);
   t.classList.add('titulo-oculto');
   setTimeout(() => { t.style.display = 'none'; }, 250);
 }
@@ -86,7 +152,6 @@ function mostrarTituloConTañ() {
   if (!t) return;
   t.style.display = '';
   requestAnimationFrame(() => t.classList.remove('titulo-oculto'));
-  sonarTañ(200);
 }
 function mostrarTituloEjercicio(nombre) {
   const te = document.getElementById('tituloEjercicio');
@@ -106,9 +171,6 @@ function setEntrenandoUI(on){
   document.documentElement.classList.toggle('entrenando', !!on);
 }
 
-// ==========================
-// Bloques
-// ==========================
 function agregarBloque() {
   const nombre = document.getElementById('nombre').value;
   const series = parseInt(document.getElementById('series').value);
@@ -132,9 +194,7 @@ function agregarBloque() {
   guardarRutinas();
 }
 
-// ==========================
-// Flujo de entrenamiento
-// ==========================
+// ===== Inicio/flujo =====
 function iniciarEntrenamiento() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -171,86 +231,15 @@ function iniciarEntrenamiento() {
   ocultarTituloConTañ();
   ocultarTituloEjercicio();
 
-  setEntrenandoUI(true);
+  setEntrenandoUI(true); 
   iniciarSerie();
 }
 
-// ==========================
-// Beeps
-// ==========================
 function stopBeepIfAny() {
   if (currentOsc) { try { currentOsc.onended = null; currentOsc.stop(); } catch(e) {} currentOsc = null; }
 }
 
-function reproducirBeepInicio(callback) {
-  vibrar(150);
-  faseActual = 'beepSerie';
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  currentOsc = osc;
-
-  osc.type = 'sine'; osc.frequency.value = 440;
-  const now = audioCtx.currentTime;
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
-  gain.gain.setValueAtTime(0.2, now + 3 - 0.02);
-  gain.gain.linearRampToValueAtTime(0, now + 3);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(now); osc.stop(now + 3);
-  osc.onended = () => { currentOsc = null; if (!enPausa && typeof callback === 'function') callback(); };
-  ocultarBarra();
-}
-
-function reproducirBeepDescanso(callback) {
-  vibrar(150);
-  faseActual = 'beepDescanso';
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  currentOsc = osc;
-
-  osc.type = 'sine'; osc.frequency.value = 440;
-  const now = audioCtx.currentTime;
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
-  gain.gain.setValueAtTime(0.2, now + 1 - 0.02);
-  gain.gain.linearRampToValueAtTime(0, now + 1);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(now); osc.stop(now + 1);
-  osc.onended = () => { currentOsc = null; if (!enPausa && typeof callback === 'function') callback(); };
-  ocultarBarra();
-}
-
-function reproducirBeepDescansoBloque(callback) {
-  vibrar(150);
-  faseActual = 'beepBloque';
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  currentOsc = osc;
-
-  osc.type = 'square'; osc.frequency.value = 660;
-  const now = audioCtx.currentTime;
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.2, now + 0.02);
-  gain.gain.setValueAtTime(0.2, now + 1 - 0.02);
-  gain.gain.linearRampToValueAtTime(0, now + 1);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(now); osc.stop(now + 1);
-  osc.onended = () => { currentOsc = null; if (!enPausa && typeof callback === 'function') callback(); };
-  ocultarBarra();
-}
-
-// ==========================
 // Flujo
-// ==========================
 function iniciarSerie() {
   const bloque = bloques[bloqueActual];
   if (serieActual < bloque.series) {
@@ -290,9 +279,7 @@ function iniciarDescansoBloque() {
   });
 }
 
-// ==========================
 // Temporizador preciso
-// ==========================
 function cuentaAtras(segundos, callback, etapa) {
   faseActual = etapa || faseActual || null;
   totalEtapa = segundos;
@@ -357,7 +344,7 @@ function mostrarBarra(etapa, total) {
   bar.style.transform  = 'scaleX(0)';
   estiloBarraPorEtapa(etapa);
   txt.innerText = `${nombreEtapa(etapa)}: 0/${total}s`;
-  void bar.offsetWidth; // reflow
+  void bar.offsetWidth; 
   requestAnimationFrame(() => {
     bar.style.transition = 'transform 0.2s linear';
     wrap.style.visibility = 'visible';
@@ -366,7 +353,7 @@ function mostrarBarra(etapa, total) {
 
 function ocultarBarra() {
   const wrap = document.getElementById('progressWrap');
-  wrap.style.visibility = 'hidden'; // reserva espacio
+  wrap.style.visibility = 'hidden'; 
 }
 
 function actualizarProgreso() {
@@ -379,9 +366,7 @@ function actualizarProgreso() {
   txt.innerText = `${nombreEtapa(faseActual)}: ${transcurrido}/${totalEtapa}s`;
 }
 
-// ==========================
 // Pausar / Reanudar
-// ==========================
 function togglePausa() {
   const btn = document.getElementById('btnPauseResume');
   if (!enPausa) {
@@ -405,9 +390,7 @@ function togglePausa() {
   }
 }
 
-// ==========================
 // Saltar ciclo
-// ==========================
 function saltarCiclo() {
   if (timer) { clearInterval(timer); timer = null; }
   stopBeepIfAny();
@@ -435,12 +418,12 @@ function saltarCiclo() {
   }
 }
 
-// ==========================
-// Finalizar / Reset
-// ==========================
+// Finalizar entrenamiento con beep especial
 function finalizarEntrenamiento() {
   clearInterval(timer); clearInterval(cronometroTotal); stopBeepIfAny();
   enPausa = false; entrenoEnCurso = false; unlockScreen();
+
+  reproducirBeepFinal();
 
   document.getElementById('cuenta').innerText = "00";
   document.getElementById('btnReset').style.display = 'none';
@@ -471,12 +454,18 @@ function confirmarReset() {
   if (ok) { reiniciarEntrenamiento(); }
 }
 
+
+
+
 function reiniciarEntrenamiento() {
   clearInterval(timer); clearInterval(cronometroTotal); stopBeepIfAny();
   enPausa = false; entrenoEnCurso = false; unlockScreen();
 
-  document.getElementById('mensaje').innerText = "";
-  document.getElementById('mensaje').classList.remove('mensaje-final');
+  const msg = document.getElementById('mensaje');
+  if (msg) {
+    msg.innerText = "";
+    msg.classList.remove('mensaje-final');
+  }
   document.getElementById('cuenta').innerText = "00";
   document.getElementById('tiempoTotal').innerText = "0";
   document.getElementById('seriesCompletadas').innerText = "0";
@@ -504,7 +493,7 @@ function reiniciarEntrenamiento() {
 }
 
 // ==========================
-// Helpers varios
+// Utilidades UI
 // ==========================
 function limpiarCampos() {
   document.getElementById('nombre').value = '';
@@ -532,6 +521,7 @@ function cargarRutinas() {
   const datos = localStorage.getItem('rutinas');
   if (datos) {
     bloques = JSON.parse(datos);
+    document.getElementById('bloques').innerHTML = '';
     bloques.forEach(b => {
       const div = document.createElement('div');
       div.className = 'bloque-item';
@@ -584,7 +574,7 @@ function eliminarRutina() {
 }
 
 // ==========================
-// Tema
+// Tema (claro/oscuro)
 // ==========================
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -604,24 +594,21 @@ function initTheme() {
 }
 
 // ==========================
-// Inicialización (Splash + Tema + Rutinas)
+// Inicialización (una sola vez)
 // ==========================
 document.addEventListener("DOMContentLoaded", () => {
-  // Ocultar splash después de 1 segundo
-  setTimeout(() => {
-    const splash = document.getElementById("splash");
-    if (splash) splash.classList.add("oculto");
-  }, 1000);
-
-  // Inicializar tema y rutinas
   initTheme();
   cargarRutinas();
   actualizarSelectRutinas();
-});
 
-// ==========================
-// PWA opcional (Service Worker)
-// ==========================
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
+  // Splash
+  setTimeout(() => {
+    const splash = document.getElementById("splash");
+    if (splash) splash.classList.add("oculto");
+  }, 800);
+
+  // PWA opcional
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+});
