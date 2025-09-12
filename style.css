@@ -230,3 +230,17 @@ button.iniciar:hover {
   input, button, select { font-size: 18px; min-height: 48px; margin-bottom: 10px; }
   #titulo { font-size: clamp(26px, 8vw, 40px); font-weight: 800; text-align: center; margin-bottom: 20px; }
 }
+/* Animación al añadir bloques */
+.bloque-item {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: aparecerBloque 0.3s ease-out forwards;
+}
+
+@keyframes aparecerBloque {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
