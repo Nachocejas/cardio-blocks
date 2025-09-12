@@ -349,9 +349,13 @@ function cuentaAtras(segundos, callback, etapa) {
 function actualizarCuenta() {
   const cuentaDiv = document.getElementById('cuenta');
   cuentaDiv.innerText = tiempoRestante;
-  cuentaDiv.classList.add('animar');
-  setTimeout(() => cuentaDiv.classList.remove('animar'), 200);
+
+  // Reinicia animación de pulso
+  cuentaDiv.classList.remove('pulse');
+  void cuentaDiv.offsetWidth; // truco para reiniciar animación
+  cuentaDiv.classList.add('pulse');
 }
+
 
 function nombreEtapa(etapa) {
   switch (etapa) {
