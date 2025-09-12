@@ -119,16 +119,24 @@ function agregarBloque() {
     return;
   }
 
+  // Añadimos el bloque al array
   bloques.push({ nombre, series, serieTime, descansoTime, descansoBloque });
 
+  // Creamos el div del bloque con animación
   const div = document.createElement('div');
   div.className = 'bloque-item';
   div.textContent = `${nombre} - ${series}x${serieTime}s + ${descansoTime}s descanso, ${descansoBloque}s entre bloques`;
+
+  // Lo insertamos en la lista de bloques
   document.getElementById('bloques').appendChild(div);
 
+  // Limpiar inputs
   limpiarCampos();
+
+  // Guardar rutina
   guardarRutinas();
 }
+
 
 // ==========================
 // Inicio del entrenamiento
