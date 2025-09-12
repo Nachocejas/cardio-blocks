@@ -1,6 +1,4 @@
-
-
-// Aqui empieza==========================
+// ==========================
 // Variables globales
 // ==========================
 let bloques = [];
@@ -49,9 +47,7 @@ window.addEventListener('keydown', (e) => {
 // Vibración
 // ==========================
 function vibrar(ms = 150) {
-  try {
-    if ('vibrate' in navigator) navigator.vibrate(ms);
-  } catch (_) {}
+  try { if ('vibrate' in navigator) navigator.vibrate(ms); } catch (_) {}
 }
 
 // ==========================
@@ -108,6 +104,9 @@ function setEntrenandoUI(on){
   document.documentElement.classList.toggle('entrenando', !!on);
 }
 
+// ==========================
+// Añadir bloque
+// ==========================
 function agregarBloque() {
   const nombre = document.getElementById('nombre').value;
   const series = parseInt(document.getElementById('series').value);
@@ -131,7 +130,9 @@ function agregarBloque() {
   guardarRutinas();
 }
 
-// ===== Inicio/flujo =====
+// ==========================
+// Inicio del entrenamiento
+// ==========================
 function iniciarEntrenamiento() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -140,13 +141,30 @@ function iniciarEntrenamiento() {
     alert("Agrega al menos un ejercicio.");
     return;
   }
-  document.getElementById('formulario').classList.add('oculto');
-  document.getElementById('bloques').classList.add('oculto');
+
+  const form = document.getElementById('formulario');
+  const bloquesDiv = document.getElementById('bloques');
+  const cuenta = document.getElementById('cuenta');
+
+  // Limpia clases previas y anima salida
+  form.classList.remove('fade-slide-in','fade-slide-out','oculto');
+  bloquesDiv.classList.remove('fade-slide-in','fade-slide-out','oculto');
+  cuenta.classList.remove('fade-slide-in','fade-slide-out');
+
+  form.classList.add('fade-slide-out');
+  bloquesDiv.classList.add('fade-slide-out');
+
+  setTimeout(() => {
+    form.classList.add('oculto');
+    bloquesDiv.classList.add('oculto');
+    cuenta.style.display = 'block';
+    cuenta.classList.add('fade-slide-in');
+  }, 400);
+
   document.getElementById('btnReset').style.display = 'inline-block';
   document.getElementById('btnPauseResume').style.display = 'inline-block';
   document.getElementById('btnPauseResume').innerText = 'Pausar';
   document.getElementById('btnSkip').style.display = 'inline-block';
-  document.getElementById('cuenta').style.display = 'block';
   document.getElementById('seccionRutinas').style.display = 'none';
 
   const wrap = document.getElementById('progressWrap');
@@ -168,15 +186,17 @@ function iniciarEntrenamiento() {
   ocultarTituloConTañ();
   ocultarTituloEjercicio();
 
-  setEntrenandoUI(true);             // <<<<<< activar UI de entreno
+  setEntrenandoUI(true);
   iniciarSerie();
 }
 
+// ==========================
+// Beeps (sonidos)
+// ==========================
 function stopBeepIfAny() {
   if (currentOsc) { try { currentOsc.onended = null; currentOsc.stop(); } catch(e) {} currentOsc = null; }
 }
 
-// Beeps
 function reproducirBeepInicio(callback) {
   vibrar(150);
   faseActual = 'beepSerie';
@@ -243,7 +263,9 @@ function reproducirBeepDescansoBloque(callback) {
   ocultarBarra();
 }
 
+// ==========================
 // Flujo
+// ==========================
 function iniciarSerie() {
   const bloque = bloques[bloqueActual];
   if (serieActual < bloque.series) {
@@ -283,7 +305,9 @@ function iniciarDescansoBloque() {
   });
 }
 
+// ==========================
 // Temporizador preciso
+// ==========================
 function cuentaAtras(segundos, callback, etapa) {
   faseActual = etapa || faseActual || null;
   totalEtapa = segundos;
@@ -357,7 +381,7 @@ function mostrarBarra(etapa, total) {
 
 function ocultarBarra() {
   const wrap = document.getElementById('progressWrap');
-  wrap.style.visibility = 'hidden'; // reserva espacio
+  wrap.style.visibility = 'hidden';
 }
 
 function actualizarProgreso() {
@@ -370,7 +394,9 @@ function actualizarProgreso() {
   txt.innerText = `${nombreEtapa(faseActual)}: ${transcurrido}/${totalEtapa}s`;
 }
 
+// ==========================
 // Pausar / Reanudar
+// ==========================
 function togglePausa() {
   const btn = document.getElementById('btnPauseResume');
   if (!enPausa) {
@@ -394,7 +420,9 @@ function togglePausa() {
   }
 }
 
+// ==========================
 // Saltar ciclo
+// ==========================
 function saltarCiclo() {
   if (timer) { clearInterval(timer); timer = null; }
   stopBeepIfAny();
@@ -422,6 +450,9 @@ function saltarCiclo() {
   }
 }
 
+// ==========================
+// Finalizar / Reset
+// ==========================
 function finalizarEntrenamiento() {
   clearInterval(timer); clearInterval(cronometroTotal); stopBeepIfAny();
   enPausa = false; entrenoEnCurso = false; unlockScreen();
@@ -430,24 +461,37 @@ function finalizarEntrenamiento() {
   document.getElementById('btnReset').style.display = 'none';
   document.getElementById('btnPauseResume').style.display = 'none';
   document.getElementById('btnSkip').style.display = 'none';
-  document.getElementById('formulario').classList.remove('oculto');
-  document.getElementById('bloques').classList.remove('oculto');
-  document.getElementById('bloques').innerHTML = '';
   document.getElementById('cuenta').style.display = 'none';
   document.getElementById('seccionRutinas').style.display = 'block';
 
+  // Volver con animación
+  const form = document.getElementById('formulario');
+  const bloquesDiv = document.getElementById('bloques');
+  form.classList.remove('fade-slide-out','oculto');
+  bloquesDiv.classList.remove('fade-slide-out','oculto');
+  form.classList.add('fade-slide-in');
+  bloquesDiv.classList.add('fade-slide-in');
+
+  // Limpiar lista visual y datos
+  document.getElementById('bloques').innerHTML = '';
   limpiarCampos();
   bloques = [];
   guardarRutinas();
 
+  // Barra de progreso fuera
   ocultarBarra();
-  document.getElementById('progressWrap').style.display = 'none';
+  const wrap = document.getElementById('progressWrap');
+  const bar  = document.getElementById('progressBar');
+  const txt  = document.getElementById('progressText');
+  wrap.style.display = 'none';
+  bar.style.transform = 'scaleX(0)';
+  txt.textContent = 'Preparado…';
 
   mostrarTituloConTañ();
   mostrarTituloEjercicio('');
   ocultarTituloEjercicio();
 
-  setEntrenandoUI(false);           // <<<<<< desactivar UI de entreno
+  setEntrenandoUI(false);
 }
 
 function confirmarReset() {
@@ -456,37 +500,16 @@ function confirmarReset() {
 }
 
 function reiniciarEntrenamiento() {
-  clearInterval(timer); clearInterval(cronometroTotal); stopBeepIfAny();
-  enPausa = false; entrenoEnCurso = false; unlockScreen();
-
+  finalizarEntrenamiento();
   document.getElementById('mensaje').innerText = "";
   document.getElementById('mensaje').classList.remove('mensaje-final');
-  document.getElementById('cuenta').innerText = "00";
   document.getElementById('tiempoTotal').innerText = "0";
   document.getElementById('seriesCompletadas').innerText = "0";
-  document.getElementById('btnReset').style.display = 'none';
-  document.getElementById('btnPauseResume').style.display = 'none';
-  document.getElementById('btnSkip').style.display = 'none';
-  document.getElementById('formulario').classList.remove('oculto');
-  document.getElementById('bloques').classList.remove('oculto');
-  document.getElementById('bloques').innerHTML = '';
-  document.getElementById('cuenta').style.display = 'none';
-  document.getElementById('seccionRutinas').style.display = 'block';
-
-  limpiarCampos();
-  bloques = [];
-  guardarRutinas();
-
-  ocultarBarra();
-  document.getElementById('progressWrap').style.display = 'none';
-
-  mostrarTituloConTañ();
-  mostrarTituloEjercicio('');
-  ocultarTituloEjercicio();
-
-  setEntrenandoUI(false);           // <<<<<< desactivar UI de entreno
 }
 
+// ==========================
+// Utilidades
+// ==========================
 function limpiarCampos() {
   document.getElementById('nombre').value = '';
   document.getElementById('series').value = '';
@@ -505,12 +528,16 @@ function iniciarCronometroTotal() {
   }, 1000);
 }
 
+// ==========================
 // Rutinas (localStorage)
+// ==========================
 function guardarRutinas() { localStorage.setItem('rutinas', JSON.stringify(bloques)); }
+
 function cargarRutinas() {
   const datos = localStorage.getItem('rutinas');
   if (datos) {
     bloques = JSON.parse(datos);
+    document.getElementById('bloques').innerHTML = '';
     bloques.forEach(b => {
       const div = document.createElement('div');
       div.className = 'bloque-item';
@@ -519,6 +546,7 @@ function cargarRutinas() {
     });
   }
 }
+
 function guardarComoRutina() {
   const nombre = document.getElementById('nombreRutina').value.trim();
   if (!nombre) { alert("Pon un nombre para la rutina."); return; }
@@ -528,6 +556,7 @@ function guardarComoRutina() {
   actualizarSelectRutinas();
   alert(`Rutina "${nombre}" guardada.`);
 }
+
 function actualizarSelectRutinas() {
   const select = document.getElementById('selectRutinas');
   select.innerHTML = '<option value="">--Selecciona una rutina--</option>';
@@ -537,6 +566,7 @@ function actualizarSelectRutinas() {
     option.value = nombre; option.textContent = nombre; select.appendChild(option);
   }
 }
+
 function cargarRutinaSeleccionada() {
   const nombre = document.getElementById('selectRutinas').value;
   if (!nombre) return;
@@ -550,8 +580,10 @@ function cargarRutinaSeleccionada() {
       div.textContent = `${b.nombre} - ${b.series}x${b.serieTime}s + ${b.descansoTime}s descanso, ${b.descansoBloque}s entre bloques`;
       document.getElementById('bloques').appendChild(div);
     });
+    guardarRutinas(); // persistimos la selección actual como "bloques"
   }
 }
+
 function eliminarRutina() {
   const nombre = document.getElementById('selectRutinas').value;
   if (!nombre) return;
@@ -562,7 +594,9 @@ function eliminarRutina() {
   alert(`Rutina "${nombre}" eliminada.`);
 }
 
-// Tema
+// ==========================
+// Tema (light/dark)
+// ==========================
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   try { localStorage.setItem('theme', theme); } catch(_) {}
@@ -580,55 +614,25 @@ function initTheme() {
   setTheme(theme);
 }
 
-window.onload = () => {
-  initTheme();
-  cargarRutinas();
-  actualizarSelectRutinas();
-};
-
-// PWA opcional
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
-
 // ==========================
-// Inicialización
+// Splash + init
 // ==========================
 document.addEventListener("DOMContentLoaded", () => {
-  initTheme();
-  cargarRutinas();
-  actualizarSelectRutinas();
-});
-
-// ==========================
-// PWA opcional
-// ==========================
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
-
-document.addEventListener("DOMContentLoaded", () => {
+  // Oculta splash
   setTimeout(() => {
     const splash = document.getElementById("splash");
     if (splash) splash.classList.add("oculto");
-  }, 1500); // 1.5s para que se vea la animación
-});
+  }, 800);
 
-
-
-
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Ocultar splash después de 1 segundo
-  setTimeout(() => {
-    document.getElementById("splash").classList.add("oculto");
-  }, 1000);
-
-  // Lo que ya tenías
+  // Inicializa tema y rutinas
   initTheme();
   cargarRutinas();
   actualizarSelectRutinas();
 });
 
+// ==========================
+// Service Worker
+// ==========================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
