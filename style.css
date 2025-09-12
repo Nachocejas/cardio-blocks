@@ -34,6 +34,33 @@ button.iniciar {
 button.iniciar:hover {
   background-color: #218838;
 }
+/* ===== Botones de control diferenciados ===== */
+
+/* Botón Reset (rojo: acción destructiva) */
+#btnReset {
+  background-color: #dc3545;
+}
+#btnReset:hover {
+  background-color: #c82333;
+}
+
+/* Botón Pausar/Reanudar (amarillo: acción intermedia) */
+#btnPauseResume {
+  background-color: #ffc107;
+  color: #111; /* mejor contraste en amarillo */
+}
+#btnPauseResume:hover {
+  background-color: #e0a800;
+}
+
+/* Botón Saltar ciclo (azul: acción neutral/avance) */
+#btnSkip {
+  background-color: #17a2b8;
+}
+#btnSkip:hover {
+  background-color: #117a8b;
+}
+
 
 /* Animación aparición de bloques */
 .bloque-item {
