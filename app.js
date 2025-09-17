@@ -468,7 +468,7 @@ function saltarCiclo() {
 function finalizarEntrenamiento() {
   clearInterval(timer); clearInterval(cronometroTotal); stopBeepIfAny();
   enPausa = false; entrenoEnCurso = false; unlockScreen();
-
+  guardarHistorial();
   document.getElementById('cuenta').innerText = "00";
   document.getElementById('btnReset').style.display = 'none';
   document.getElementById('btnPauseResume').style.display = 'none';
@@ -486,6 +486,8 @@ function finalizarEntrenamiento() {
 
   // Limpiar lista visual y datos
   document.getElementById('bloques').innerHTML = '';
+
+
   limpiarCampos();
   bloques = [];
   guardarRutinas();
@@ -605,6 +607,47 @@ function eliminarRutina() {
   actualizarSelectRutinas();
   alert(`Rutina "${nombre}" eliminada.`);
 }
+function guardarHistorial() {
+  const ahora = new Date();
+  const fecha = ahora.toLocaleDateString();
+  const hora = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+  // Texto con info del entreno
+  const resumen = {
+    fecha,
+    hora,
+    bloques: bloques.map(b => `${b.nombre} (${b.series}x${b.serieTime}s)`),
+    tiempo: tiempoTotal,
+    series: seriesCompletadas
+  };
+
+  // Cargar historial existente
+  let historial = JSON.parse(localStorage.getItem('historialEntrenos')) || [];
+  historial.unshift(resumen); // añade al inicio
+  localStorage.setItem('historialEntrenos', JSON.stringify(historial));
+
+  actualizarHistorial();
+}
+function actualizarHistorial() {
+  const lista = document.getElementById('listaHistorial');
+  if (!lista) return;
+
+  lista.innerHTML = '';
+  const historial = JSON.parse(localStorage.getItem('historialEntrenos')) || [];
+
+  historial.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = `${item.fecha} ${item.hora} — ${item.series} series, ${item.tiempo}s (${item.bloques.join(", ")})`;
+    lista.appendChild(li);
+  });
+}
+function borrarHistorial() {
+  if (confirm("¿Seguro que quieres borrar el historial?")) {
+    localStorage.removeItem('historialEntrenos');
+    actualizarHistorial();
+  }
+}
+
 
 // ==========================
 // Tema (light/dark)
@@ -640,6 +683,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initTheme();
   cargarRutinas();
   actualizarSelectRutinas();
+  actualizarHistorial();
+
 });
 
 // ==========================
