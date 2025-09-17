@@ -270,6 +270,11 @@ button.iniciar:hover {
 .entrenando #progressWrap{ display: block !important; visibility: visible !important; margin-top: 8px; }
 .entrenando #cuenta{ margin-top: 6px; }
 .entrenando #info{ margin-top: 8px; }
+/* Ocultar historial durante el entrenamiento */
+.entrenando #seccionHistorial {
+  display: none !important;
+}
+
 
 #btnReset, #btnPauseResume, #btnSkip{ min-height: 48px; font-size: 16px; }
 
