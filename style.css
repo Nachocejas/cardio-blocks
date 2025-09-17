@@ -25,8 +25,9 @@ button { background-color: #007BFF; color: white; border: none; cursor: pointer;
 button:hover { background-color: #0056b3; }
 button:active { transform: scale(0.96); }
 
+/* Botón principal de iniciar entrenamiento - mismo verde en ambos temas */
 button.iniciar {
-  background-color: #28a745;
+  background-color: #28a745; /* Verde */
   font-size: 18px;
   font-weight: bold;
   min-height: 50px;
@@ -34,7 +35,16 @@ button.iniciar {
 button.iniciar:hover {
   background-color: #218838;
 }
-/* ===== Botones de control diferenciados ===== */
+
+/* Asegurar que en modo oscuro se mantenga verde */
+[data-theme="dark"] button.iniciar {
+  background-color: #28a745;
+}
+[data-theme="dark"] button.iniciar:hover {
+  background-color: #218838;
+}
+
+
 
 /* Botón Reset (rojo: acción destructiva) */
 #btnReset {
@@ -60,6 +70,30 @@ button.iniciar:hover {
 #btnSkip:hover {
   background-color: #117a8b;
 }
+
+/* ===== Modo oscuro ===== */
+[data-theme="dark"] #btnReset {
+  background-color: #e55353; /* rojo más suave en dark */
+}
+[data-theme="dark"] #btnReset:hover {
+  background-color: #cc4444;
+}
+
+[data-theme="dark"] #btnPauseResume {
+  background-color: #e0b84a; /* amarillo más cálido */
+  color: #111;
+}
+[data-theme="dark"] #btnPauseResume:hover {
+  background-color: #cfa638;
+}
+
+[data-theme="dark"] #btnSkip {
+  background-color: #3caeca; /* azul más claro */
+}
+[data-theme="dark"] #btnSkip:hover {
+  background-color: #2e8ca3;
+}
+
 
 
 /* Animación aparición de bloques */
