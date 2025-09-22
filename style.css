@@ -320,5 +320,112 @@ button.iniciar:hover {
 #cuenta.pulse {
   animation: pulse 0.4s ease-out;
 }
+/* Elimina márgenes y viñetas de la lista */
+/* Historial desplegable */
+/* ===== Historial ===== */
+#historialEntrenos {
+  margin-top: 16px;
+  text-align: center;
+}
+
+#historialEntrenos details {
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+#historialEntrenos summary {
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+}
+
+#listaHistorial {
+  list-style: none;       /* quita viñetas */
+  padding: 0;             /* quita sangría */
+  margin: 0;
+}
+
+#listaHistorial li {
+  margin: 10px 0;
+  text-align: center;     /* centra todo dentro del li */
+}
+
+
+#listaHistorial button {
+  display: block;
+  margin: 6px auto 0;   /* centrado */
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #28a745;  /* verde igual que "iniciar" */
+  color: white;
+}
+
+#listaHistorial button:hover {
+  background: #218838;
+}
+
+/* Botón borrar historial */
+.btnBorrarHistorial {
+  display: block;
+  margin: 10px auto 0;
+  background: #dc3545; /* rojo */
+  color: white;
+}
+
+.btnBorrarHistorial:hover {
+  background: #c82333;
+}
+
+/* ===== Modo oscuro ===== */
+[data-theme="dark"] #historialEntrenos details {
+  background: #1f2937;      /* gris oscuro */
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] #listaHistorial li {
+  color: #f9fafb;           /* texto claro */
+}
+
+[data-theme="dark"] #listaHistorial button {
+  background: #28a745;      /* mantener verde */
+  color: white;
+}
+
+[data-theme="dark"] #listaHistorial button:hover {
+  background: #218838;
+}
+
+[data-theme="dark"] .btnBorrarHistorial {
+  background: #dc3545;      /* mantener rojo */
+}
+
+[data-theme="dark"] .btnBorrarHistorial:hover {
+  background: #c82333;
+}
+/* Botón Repetir en historial */
+.btn-repetir {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-block;
+}
+.btn-repetir:hover {
+  background-color: #218838;
+}
+[data-theme="dark"] .btn-repetir {
+  background-color: #28a745;
+}
+[data-theme="dark"] .btn-repetir:hover {
+  background-color: #218838;
+}
 
 
