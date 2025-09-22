@@ -612,22 +612,26 @@ function guardarHistorial() {
   const fecha = ahora.toLocaleDateString();
   const hora = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-  // Texto con info del entreno
+  // Copia segura de los bloques completos
+  const copiaBloques = JSON.parse(JSON.stringify(bloques));
+
   const resumen = {
     fecha,
     hora,
-    bloques: bloques.map(b => `${b.nombre} (${b.series}x${b.serieTime}s)`),
+    bloquesTexto: copiaBloques.map(b => `${b.nombre} (${b.series}x${b.serieTime}s)`),
+    bloquesData: copiaBloques, // 👈 Guardamos datos completos
     tiempo: tiempoTotal,
     series: seriesCompletadas
   };
 
-  // Cargar historial existente
   let historial = JSON.parse(localStorage.getItem('historialEntrenos')) || [];
   historial.unshift(resumen); // añade al inicio
   localStorage.setItem('historialEntrenos', JSON.stringify(historial));
 
   actualizarHistorial();
 }
+
+
 function actualizarHistorial() {
   const lista = document.getElementById('listaHistorial');
   if (!lista) return;
@@ -635,12 +639,41 @@ function actualizarHistorial() {
   lista.innerHTML = '';
   const historial = JSON.parse(localStorage.getItem('historialEntrenos')) || [];
 
-  historial.forEach(item => {
+  historial.forEach((item) => {
     const li = document.createElement('li');
-    li.textContent = `${item.fecha} ${item.hora} — ${item.series} series, ${item.tiempo}s (${item.bloques.join(", ")})`;
+
+    // Texto
+    const texto = document.createElement('div');
+    texto.textContent = `${item.fecha} ${item.hora} — ${item.series} series, ${item.tiempo}s (${item.bloquesTexto.join(", ")})`;
+
+    // Botón repetir
+    const btn = document.createElement('button');
+    btn.textContent = "Repetir";
+    btn.classList.add("btn-repetir");
+    btn.style.marginTop = "6px";
+    btn.onclick = () => {
+      bloques = JSON.parse(JSON.stringify(item.bloquesData));
+      document.getElementById('bloques').innerHTML = '';
+      bloques.forEach(b => {
+        const div = document.createElement('div');
+        div.className = 'bloque-item';
+        div.textContent = `${b.nombre} - ${b.series}x${b.serieTime}s + ${b.descansoTime}s descanso, ${b.descansoBloque}s entre bloques`;
+        document.getElementById('bloques').appendChild(div);
+      });
+      iniciarEntrenamiento();
+    };
+
+    li.appendChild(texto);
+    li.appendChild(btn);
     lista.appendChild(li);
   });
 }
+
+
+
+
+
+
 function borrarHistorial() {
   if (confirm("¿Seguro que quieres borrar el historial?")) {
     localStorage.removeItem('historialEntrenos');
