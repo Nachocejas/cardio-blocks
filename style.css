@@ -47,52 +47,46 @@ button.iniciar:hover {
 
 
 /* Botón Reset (rojo: acción destructiva) */
+/* ===== Botones de control diferenciados ===== */
+
+/* Reset → rojo */
 #btnReset {
   background-color: #dc3545;
+  color: #fff;
 }
 #btnReset:hover {
-  background-color: #c82333;
+  background-color: #b02a37;
 }
 
-/* Botón Pausar/Reanudar (amarillo: acción intermedia) */
+/* Pausar/Reanudar → naranja */
 #btnPauseResume {
-  background-color: #ffc107;
-  color: #111; /* mejor contraste en amarillo */
+  background-color: #ff9800;
+  color: #fff;
 }
 #btnPauseResume:hover {
-  background-color: #e0a800;
+  background-color: #e68900;
 }
 
-/* Botón Saltar ciclo (azul: acción neutral/avance) */
+/* Saltar ciclo → azul */
 #btnSkip {
-  background-color: #17a2b8;
+  background-color: #007bff;
+  color: #fff;
 }
 #btnSkip:hover {
-  background-color: #117a8b;
+  background-color: #0056b3;
 }
 
-/* ===== Modo oscuro ===== */
+/* Modo oscuro (mantiene contraste) */
 [data-theme="dark"] #btnReset {
-  background-color: #e55353; /* rojo más suave en dark */
+  background-color: #dc3545;
 }
-[data-theme="dark"] #btnReset:hover {
-  background-color: #cc4444;
-}
-
 [data-theme="dark"] #btnPauseResume {
-  background-color: #e0b84a; /* amarillo más cálido */
-  color: #111;
+  background-color: #ff9800;
 }
-[data-theme="dark"] #btnPauseResume:hover {
-  background-color: #cfa638;
+[data-theme="dark"] #btnSkip {
+  background-color: #2563eb;
 }
 
-[data-theme="dark"] #btnSkip {
-  background-color: #3caeca; /* azul más claro */
-}
-[data-theme="dark"] #btnSkip:hover {
-  background-color: #2e8ca3;
-}
 
 
 
@@ -323,6 +317,7 @@ button.iniciar:hover {
 /* Elimina márgenes y viñetas de la lista */
 /* Historial desplegable */
 /* ===== Historial ===== */
+/* ===== Historial ===== */
 #historialEntrenos {
   margin-top: 16px;
   text-align: center;
@@ -342,29 +337,29 @@ button.iniciar:hover {
 }
 
 #listaHistorial {
-  list-style: none;       /* quita viñetas */
-  padding: 0;             /* quita sangría */
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
 #listaHistorial li {
   margin: 10px 0;
-  text-align: center;     /* centra todo dentro del li */
+  text-align: center; /* centra el contenido */
 }
 
-
-#listaHistorial button {
+/* Botón Repetir */
+#listaHistorial .btn-repetir {
   display: block;
-  margin: 6px auto 0;   /* centrado */
-  padding: 6px 12px;
+  margin: 6px auto 0;   /* centrado total */
+  padding: 8px 16px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  background: #28a745;  /* verde igual que "iniciar" */
+  background: #28a745;  /* verde */
   color: white;
+  font-size: 15px;
 }
-
-#listaHistorial button:hover {
+#listaHistorial .btn-repetir:hover {
   background: #218838;
 }
 
@@ -372,60 +367,70 @@ button.iniciar:hover {
 .btnBorrarHistorial {
   display: block;
   margin: 10px auto 0;
-  background: #dc3545; /* rojo */
+  background: #dc3545;
   color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
 }
-
 .btnBorrarHistorial:hover {
   background: #c82333;
 }
 
 /* ===== Modo oscuro ===== */
 [data-theme="dark"] #historialEntrenos details {
-  background: #1f2937;      /* gris oscuro */
+  background: #1f2937;
   border-color: #374151;
   color: #e5e7eb;
 }
 
 [data-theme="dark"] #listaHistorial li {
-  color: #f9fafb;           /* texto claro */
+  color: #f9fafb;
 }
 
-[data-theme="dark"] #listaHistorial button {
-  background: #28a745;      /* mantener verde */
-  color: white;
+[data-theme="dark"] #listaHistorial .btn-repetir {
+  background: #28a745;
 }
-
-[data-theme="dark"] #listaHistorial button:hover {
+[data-theme="dark"] #listaHistorial .btn-repetir:hover {
   background: #218838;
 }
 
 [data-theme="dark"] .btnBorrarHistorial {
-  background: #dc3545;      /* mantener rojo */
+  background: #dc3545;
 }
-
 [data-theme="dark"] .btnBorrarHistorial:hover {
   background: #c82333;
 }
-/* Botón Repetir en historial */
-.btn-repetir {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 15px;
+/* ===== Animación y estilo para el summary del historial ===== */
+#historialEntrenos summary {
+  font-weight: bold;
   cursor: pointer;
-  display: inline-block;
-}
-.btn-repetir:hover {
-  background-color: #218838;
-}
-[data-theme="dark"] .btn-repetir {
-  background-color: #28a745;
-}
-[data-theme="dark"] .btn-repetir:hover {
-  background-color: #218838;
+  outline: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+/* Hover (cuando pasas el dedo o ratón) */
+#historialEntrenos summary:hover {
+  background: rgba(0, 123, 255, 0.1); /* azul clarito */
+  color: #007bff;
+}
 
+/* Cuando el <details> está abierto */
+#historialEntrenos details[open] summary {
+  background: rgba(40, 167, 69, 0.15); /* verde clarito */
+  color: #28a745;
+}
+
+/* ===== Modo oscuro ===== */
+[data-theme="dark"] #historialEntrenos summary:hover {
+  background: rgba(96, 165, 250, 0.1); /* azul clarito */
+  color: #60a5fa;
+}
+
+[data-theme="dark"] #historialEntrenos details[open] summary {
+  background: rgba(40, 167, 69, 0.2); /* verde clarito */
+  color: #28a745;
+}
